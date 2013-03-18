@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GraphicsManipulation</name>
+    </assembly>
+    <members>
+        <member name="T:GraphicsManipulation.BitmapArray">
+            <summary>
+            Contains four two-dimensional arrays containing red, green and blue channels
+            of a source image. In essence manipulation of such data is very easy, especially 
+            with applying mathematical functions to pixel data.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.BrightenFilter">
+            <summary>
+            Brightens the pixel.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.FilterBrush">
+            <summary>
+            Filters the bitmap (or its part) pixel by pixel using a function defined via 
+            implementation of abstract methods.
+            </summary>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.FilterRed(System.Double,System.Double,System.Double)">
+            <summary>
+            Filters the red component.
+            </summary>
+            <param name="r">red component value, from 0 to 1</param>
+            <param name="g">green component value, from 0 to 1</param>
+            <param name="b">blue component value, from 0 to 1</param>
+            <returns>updated value of the red component, from 0 to 1</returns>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.FilterGreen(System.Double,System.Double,System.Double)">
+            <summary>
+            Filters the green component.
+            </summary>
+            <param name="r">red component value, from 0 to 1</param>
+            <param name="g">green component value, from 0 to 1</param>
+            <param name="b">blue component value, from 0 to 1</param>
+            <returns>updated value of the green component, from 0 to 1</returns>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.FilterBlue(System.Double,System.Double,System.Double)">
+            <summary>
+            Filters the blue component.
+            </summary>
+            <param name="r">red component value, from 0 to 1</param>
+            <param name="g">green component value, from 0 to 1</param>
+            <param name="b">blue component value, from 0 to 1</param>
+            <returns>updated value of the blue component, from 0 to 1</returns>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.CustomFilter">
+            <summary>
+            Enables application of a completely arbitrary filter.
+            </summary>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.CustomFilter.GetExactValue(System.Double)">
+            <summary>
+            Gets exact value of the filter function using interpolation.
+            </summary>
+            <param name="x">x coordinate of the point</param>
+            <returns>y coordinate of a hypothetical point</returns>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.DarkenFilter">
+            <summary>
+            Darkens the image.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.IdentityFilter">
+            <summary>
+            Does nothing - by applying identity function. Useless, but it it a valid filter.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.GrayscaleFilter">
+            <summary>
+            Converts an image to the grayscale.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.SingleFilterBrush">
+            <summary>
+            A special kind of filter, which applies the same function to all three color channels.
+            </summary>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.SingleFilterBrush.Filter(System.Double,System.Double,System.Double)">
+            <summary>
+            Filters the red, green and blue components using the same function.
+            </summary>
+            <param name="r">red component value, from 0 to 1</param>
+            <param name="g">green component value, from 0 to 1</param>
+            <param name="b">blue component value, from 0 to 1</param>
+            <returns>updated value of the blue component, from 0 to 1</returns>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.InverseFilter">
+            <summary>
+            Enables creation of a negative of an image.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.OnlyBlueFilter">
+            <summary>
+            Allows only the blue channel to pass through.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.RandomFilter">
+            <summary>
+            Creates a random effect.
+            </summary>
+        </member>
+    </members>
+</doc>

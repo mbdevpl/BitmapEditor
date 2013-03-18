@@ -8,6 +8,8 @@ Thumbs.db
 *.v11.suo
 *.csproj.user
 *.cache
+*.vshost.exe
+*.vshost.exe.manifest
 /src/*/obj
 /src/*/bin
 /src/TestResults
