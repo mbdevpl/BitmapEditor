@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsManipulation", "GraphicsManipulation\GraphicsManipulation.csproj", "{FDFEEA09-7CAE-45C2-B491-9A537BC20332}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitmapEditor", "BitmapEditor\BitmapEditor.csproj", "{421B8A86-04F9-457C-9847-46A069C752EC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FDFEEA09-7CAE-45C2-B491-9A537BC20332}.Release|x86.ActiveCfg = Release|Any CPU
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Debug|x86.ActiveCfg = Debug|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Debug|x86.Build.0 = Debug|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Release|Any CPU.ActiveCfg = Release|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Release|Mixed Platforms.Build.0 = Release|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Release|x86.ActiveCfg = Release|x86
+		{421B8A86-04F9-457C-9847-46A069C752EC}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,52 @@
+﻿<Window x:Class="BitmapEditor.CustomFilterWindow"
+		xmlns:w="clr-namespace:BitmapEditor"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		Title="Computer Graphics, Lab 1, Mateusz Bysiek"
+		Width="400" Height="445" ResizeMode="NoResize" WindowStyle="ToolWindow">
+	<Window.Resources>
+		<!--<Style TargetType="StackPanel">
+			<Setter Property="Margin" Value="3,3,3,3" />
+		</Style>-->
+		<Style TargetType="Button">
+			<Setter Property="Margin" Value="4,3,4,3" />
+			<Setter Property="Padding" Value="8,1,8,1" />
+		</Style>
+	</Window.Resources>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<Menu Grid.Row="0">
+			<!--<MenuItem Header="Help" Click="OptionHelp_Click" />-->
+			<MenuItem Header="Clear" Click="ButtonFilter_Click" />
+			<MenuItem Header="Basic examples">
+				<MenuItem Header="Identity" Click="ButtonFilter_Click" />
+				<MenuItem Header="Inverse" Click="ButtonFilter_Click" />
+				<MenuItem Header="Brighten" Click="ButtonFilter_Click" />
+				<MenuItem Header="Darken" Click="ButtonFilter_Click" />
+			</MenuItem>
+			<MenuItem Header="More examples">
+				<MenuItem Header="Parabola" Click="ButtonFilter_Click" />
+				<MenuItem Header="MicroStairs" Click="ButtonFilter_Click" />
+				<MenuItem Header="MacroStairs" Click="ButtonFilter_Click" />
+				<MenuItem Header="Wave" Click="ButtonFilter_Click" />
+				<MenuItem Header="LowerCrop" Click="ButtonFilter_Click" />
+				<MenuItem Header="UpperCrop" Click="ButtonFilter_Click" />
+				<MenuItem Header="CenterCrop" Click="ButtonFilter_Click" />
+			</MenuItem>
+		</Menu>
+		<w:CustomFilterEditor Grid.Row="1"
+				x:Name="CustomFilterCreator" />
+		<StackPanel Grid.Row="2"
+				Orientation="Horizontal" HorizontalAlignment="Center">
+			<Button Content="Ok" Click="ButtonOk_Click" />
+			<Button Content="Cancel" Click="ButtonCancel_Click" />
+		</StackPanel>
+	</Grid>
+</Window>

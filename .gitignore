@@ -1,0 +1,17 @@
+# files that should be ignored by git
+
+# Windows
+Thumbs.db
+
+# Visual Studio
+*.suo
+*.v11.suo
+*.csproj.user
+*.cache
+/src/*/obj
+/src/*/bin
+/src/TestResults
+
+# Temporary enries
+*.zip
+/src_old
