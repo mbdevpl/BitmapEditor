@@ -198,7 +198,7 @@ namespace BitmapEditor
 
 		public MainWindow() : this(null) { }
 
-		public MainWindow(string initialImagePath)
+		public MainWindow(string initialImagePath, int levels = 0, bool monochrome = false)
 		{
 			this.DataContext = this;
 
@@ -214,6 +214,47 @@ namespace BitmapEditor
 
 			InitializeComponent();
 
+			InitializeDictionaries();
+
+			if (initialImagePath == null)
+			{
+				isGlobalMain = true;
+				//LoadFromDisk("honda.jpg");
+			}
+			else
+			{
+				isGlobalMain = false;
+				LoadFromDisk(initialImagePath);
+			}
+
+			FilterType_Checked(dictionaryFilterTypeToRadioButton[filter], null);
+			BrushShape_Checked(dictionaryBrushShapeToRadioButton[shape], null);
+
+			ReinitializeBitmapArray((BitmapSource)DrawingImage.Source);
+
+			if (!isGlobalMain)
+			{
+				OptionLoad.IsEnabled = false;
+				OptionReload.IsEnabled = false;
+				ErrorDiffusionGroup.IsEnabled = false;
+				OrderedDitheringGroup.IsEnabled = false;
+
+				OptionLoad.Visibility = Visibility.Collapsed;
+				OptionReload.Visibility = Visibility.Collapsed;
+				ErrorDiffusionGroup.Visibility = Visibility.Collapsed;
+				OrderedDitheringGroup.Visibility = Visibility.Collapsed;
+
+				if (levels > 1)
+				{
+					var pv = new PaletteViewer(levels, monochrome);
+					Grid.SetRow(pv, 1);
+					CanvasGrid.Children.Add(pv);
+				}
+			}
+		}
+
+		private void InitializeDictionaries()
+		{
 			dictionaryFilterTypeToRadioButton = new Dictionary<FilterTypes, RadioButton>();
 			var d1 = dictionaryFilterTypeToRadioButton;
 			d1.Add(FilterTypes.Identity, FilterIdentity);
@@ -252,36 +293,6 @@ namespace BitmapEditor
 			dictionaryButtonToErrorDiffusionKernelName = new Dictionary<Button, ErrorDiffusionKernelName>();
 			foreach (var pair in dictionaryErrorDiffusionKernelNameToButton)
 				dictionaryButtonToErrorDiffusionKernelName.Add(pair.Value, pair.Key);
-
-			if (initialImagePath == null)
-			{
-				isGlobalMain = true;
-				//LoadFromDisk("honda.jpg");
-			}
-			else
-			{
-				isGlobalMain = false;
-
-				LoadFromDisk(initialImagePath);
-			}
-
-			FilterType_Checked(dictionaryFilterTypeToRadioButton[filter], null);
-			BrushShape_Checked(dictionaryBrushShapeToRadioButton[shape], null);
-
-			ReinitializeBitmapArray((BitmapSource)DrawingImage.Source);
-
-			if (!isGlobalMain)
-			{
-				OptionLoad.IsEnabled = false;
-				OptionReload.IsEnabled = false;
-				ErrorDiffusionGroup.IsEnabled = false;
-				OrderedDitheringGroup.IsEnabled = false;
-
-				OptionLoad.Visibility = Visibility.Collapsed;
-				OptionReload.Visibility = Visibility.Collapsed;
-				ErrorDiffusionGroup.Visibility = Visibility.Collapsed;
-				OrderedDitheringGroup.Visibility = Visibility.Collapsed;
-			}
 		}
 
 		private void ReinitializeBitmapArray(BitmapSource source)
@@ -346,9 +357,9 @@ namespace BitmapEditor
 			//RefreshVars(false);
 		}
 
-		public MainWindow Clone()
+		public MainWindow Clone(int levels = 0, bool monochrome = false)
 		{
-			MainWindow w = new MainWindow(latestFileName == null ? "" : latestFileName);
+			MainWindow w = new MainWindow(latestFileName == null ? "" : latestFileName, levels, monochrome);
 
 			w.Width = this.ActualWidth;
 			w.Height = this.ActualHeight;
@@ -592,7 +603,7 @@ namespace BitmapEditor
 			var convertedArray = conv.Process(bitmapArray, dictionaryButtonToErrorDiffusionKernelName[obj],
 				(int)errorDiffusionColorLevels);
 
-			MainWindow w = Clone();
+			MainWindow w = Clone((int)errorDiffusionColorLevels, false);
 			w.SetBitmapArray(convertedArray);
 			w.Show();
 		}
@@ -605,7 +616,7 @@ namespace BitmapEditor
 			var conv = new OrderedDitheringConverter();
 			var convertedArray = conv.Process(bitmapArray, (int)sizeOfOrderedDitheringArray, (int)orderedDitheringColorLevels);
 
-			MainWindow w = Clone();
+			MainWindow w = Clone((int)orderedDitheringColorLevels, false);
 			w.SetBitmapArray(convertedArray);
 			w.Show();
 		}

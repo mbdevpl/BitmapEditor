@@ -174,21 +174,27 @@
 					<!--<Button Content="Halftoning" Click="Halftoning_Click" />-->
 				</StackPanel>
 			</StackPanel>
-			<ScrollViewer Grid.Column="1"
+			<Grid Grid.Column="1" Margin="0,0,0,0" Name="CanvasGrid">
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				<ScrollViewer
 						HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
-				<Canvas Name="DrawingArea" 
+					<Canvas Name="DrawingArea" 
 						Focusable="True"
 						MouseLeftButtonDown="DrawingArea_MouseLeftButtonDown"
 						MouseLeftButtonUp="DrawingArea_MouseLeftButtonUp"
 						MouseMove="DrawingArea_MouseMove"
 						Height="{Binding ElementName=DrawingImage, Path=ActualHeight, Mode=OneWay}"
 						Width="{Binding ElementName=DrawingImage, Path=ActualWidth, Mode=OneWay}">
-					<Image Name="DrawingImage" Source="Honda.jpg" />
-					<!-- HorizontalAlignment="Left" VerticalAlignment="Top" -->
-					<Rectangle Name="DrawingBrush" Stroke="White" Visibility="Hidden"
+						<Image Name="DrawingImage" Source="Honda.jpg" />
+						<!-- HorizontalAlignment="Left" VerticalAlignment="Top" -->
+						<Rectangle Name="DrawingBrush" Stroke="White" Visibility="Hidden"
 							Width="{Binding SizeOfBrush}" Height="{Binding SizeOfBrush}" />
-				</Canvas>
-			</ScrollViewer>
+					</Canvas>
+				</ScrollViewer>
+			</Grid>
 		</Grid>
 		<StackPanel Orientation="Horizontal" Grid.Row="2">
 			<TextBlock Text="Filter: "
