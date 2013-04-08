@@ -121,7 +121,7 @@ namespace BitmapEditor
 			}
 		}
 
-		private decimal sizeOfOrderedDitheringArray = 3;
+		private decimal sizeOfOrderedDitheringArray = 2;
 		public decimal SizeOfOrderedDitheringArray
 		{
 			get { return sizeOfOrderedDitheringArray; }
@@ -131,8 +131,38 @@ namespace BitmapEditor
 					return;
 				sizeOfOrderedDitheringArray = value;
 
+				if (isGlobalMain && OrderedDithering != null)
+				{
+					if (OrderedDitheringConverter.MatrixSizeIsAccepted[(int)sizeOfOrderedDitheringArray])
+					{
+						if (!OrderedDithering.IsEnabled)
+							OrderedDithering.IsEnabled = true;
+					}
+					else
+					{
+						if (OrderedDithering.IsEnabled)
+							OrderedDithering.IsEnabled = false;
+					}
+				}
+
+
 				if (PropertyChanged != null)
 					PropertyChanged(this, new PropertyChangedEventArgs("SizeOfOrderedDitheringArray"));
+			}
+		}
+
+		private decimal maxSizeOfOrderedDitheringArray = OrderedDitheringConverter.MaxMatrixSize;
+		public decimal MaxSizeOfOrderedDitheringArray
+		{
+			get { return maxSizeOfOrderedDitheringArray; }
+			set
+			{
+				if (maxSizeOfOrderedDitheringArray == value)
+					return;
+				maxSizeOfOrderedDitheringArray = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("MaxSizeOfOrderedDitheringArray"));
 			}
 		}
 
@@ -513,7 +543,7 @@ namespace BitmapEditor
 
 			FilterBrush brush = (FilterBrush)System.Reflection.Assembly.GetAssembly(typeRef).CreateInstance(typeName);
 
-			if(brush is CustomFilter)
+			if (brush is CustomFilter)
 				((CustomFilter)brush).FilterFunction = latestCustomFilter;
 
 			brush.ApplyAt(bitmapArray, Shape, new Point(x, y), (int)SizeOfBrush, mask);
@@ -554,7 +584,7 @@ namespace BitmapEditor
 			if (!isGlobalMain)
 				return;
 
-			if(sender is Button == false)
+			if (sender is Button == false)
 				return;
 			var obj = (Button)sender;
 

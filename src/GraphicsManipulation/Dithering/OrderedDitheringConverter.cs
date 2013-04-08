@@ -12,15 +12,24 @@ namespace GraphicsManipulation.Dithering
 	{
 		private static readonly Dictionary<int, int[][]> Matrices;
 
+		public static readonly int MaxMatrixSize = 32;
+
+		public static readonly bool[] MatrixSizeIsAccepted;
+
 		static OrderedDitheringConverter()
 		{
 			Matrices = new Dictionary<int, int[][]>();
+			MatrixSizeIsAccepted = new bool[MaxMatrixSize+1];
+
+			MatrixSizeIsAccepted[0] = false;
+			MatrixSizeIsAccepted[1] = false;
 
 			Matrices.Add(2, new int[][]
 				{
 					new int[] {1, 3},
 					new int[] {4, 2}
 				});
+			MatrixSizeIsAccepted[2] = true;
 
 			Matrices.Add(3, new int[][]
 				{
@@ -28,36 +37,81 @@ namespace GraphicsManipulation.Dithering
 					new int[] {6, 1, 9},
 					new int[] {2, 8, 5}
 				});
+			MatrixSizeIsAccepted[3] = true;
 
-			Matrices.Add(4, new int[][]
-				{
-					new int[] {1, 9, 3, 11},
-					new int[] {13, 5, 15, 7},
-					new int[] {4, 12, 2, 10},
-					new int[] {16, 8, 14, 6}
-				});
+			#region obsolete matrices that are derived from smaller ones
+			//Matrices.Add(4, new int[][]
+			//	{
+			//		new int[] {1, 9, 3, 11},
+			//		new int[] {13, 5, 15, 7},
+			//		new int[] {4, 12, 2, 10},
+			//		new int[] {16, 8, 14, 6}
+			//	});
 
-			Matrices.Add(6, new int[][]
-				{
-					new int[] {9, 25, 13, 11, 27, 15},
-					new int[] {21, 1, 33, 23, 3, 35},
-					new int[] {5, 29, 17, 7, 31, 19},
-					new int[] {12, 28, 16, 10, 26, 14},
-					new int[] {24, 4, 36, 22, 2, 34},
-					new int[] {8, 32, 20, 6, 30, 18}
-				});
+			//Matrices.Add(6, new int[][]
+			//	{
+			//		new int[] {9, 25, 13, 11, 27, 15},
+			//		new int[] {21, 1, 33, 23, 3, 35},
+			//		new int[] {5, 29, 17, 7, 31, 19},
+			//		new int[] {12, 28, 16, 10, 26, 14},
+			//		new int[] {24, 4, 36, 22, 2, 34},
+			//		new int[] {8, 32, 20, 6, 30, 18}
+			//	});
 
-			Matrices.Add(8, new int[][]
+			//Matrices.Add(8, new int[][]
+			//	{
+			//		new int[] {1, 49, 13, 61, 4, 52, 16, 64},
+			//		new int[] {33, 17, 45, 29, 36, 20, 48, 32},
+			//		new int[] {9, 57, 5, 53, 12, 60, 8, 56},
+			//		new int[] {41, 25, 37, 21, 44, 28, 40, 24},
+			//		new int[] {3, 51, 15, 63, 2, 50, 14, 62},
+			//		new int[] {35, 19, 47, 31, 34, 18, 46, 30},
+			//		new int[] {11, 59, 7, 55, 10, 58, 6, 54},
+			//		new int[] {43, 27, 39, 23, 42, 26, 38, 22}
+			//	}); 
+			#endregion
+
+			for (int i = 4; i <= MaxMatrixSize; ++i)
+			{
+				MatrixSizeIsAccepted[i] = false;
+
+				if (i % 2 != 0)
+					continue;
+
+				int[][] m = null;
+
+				if (Matrices.TryGetValue(i, out m))
+					continue; // matrix of this size was added manually
+
+				int iDiv = i / 2;
+
+				if (!Matrices.TryGetValue(iDiv, out m))
+					continue; // n times smaller matrix must exist
+
+				var module = m.MatrixAdd(-1).MatrixMultiply(4);
+
+				int[][] matrix = new int[i][];
+				for (int y = 0; y < i; ++y)
 				{
-					new int[] {1, 49, 13, 61, 4, 52, 16, 64},
-					new int[] {33, 17, 45, 29, 36, 20, 48, 32},
-					new int[] {9, 57, 5, 53, 12, 60, 8, 56},
-					new int[] {41, 25, 37, 21, 44, 28, 40, 24},
-					new int[] {3, 51, 15, 63, 2, 50, 14, 62},
-					new int[] {35, 19, 47, 31, 34, 18, 46, 30},
-					new int[] {11, 59, 7, 55, 10, 58, 6, 54},
-					new int[] {43, 27, 39, 23, 42, 26, 38, 22}
-				});
+					matrix[y] = new int[i];
+					for (int x = 0; x < i; ++x)
+					{
+						int modifier = 1;
+						if (y >= iDiv)
+						{
+							++modifier;
+							if (x < iDiv)
+								modifier += 2;
+						}
+						else if (x >= iDiv)
+							modifier += 2;
+						matrix[y][x] = module[y % iDiv][x % iDiv] + modifier;
+					}
+				}
+
+				Matrices.Add(i, matrix);
+				MatrixSizeIsAccepted[i] = true;
+			}
 		}
 
 		/// <summary>
@@ -65,6 +119,23 @@ namespace GraphicsManipulation.Dithering
 		/// </summary>
 		public OrderedDitheringConverter()
 		{
+		}
+
+		private double processOnePixel(double color, double[] levels, double[] levelsBounds,
+			int levelsCountLess, double currentDitherValue)
+		{
+			int colorLevel = levelsCountLess;
+			for (int i = 1; i < levelsCountLess; ++i)
+				if (color < levelsBounds[i])
+				{
+					//colorApprox = levels[i];
+					colorLevel = i;
+					break;
+				}
+			if (color < levels[colorLevel] - currentDitherValue)
+				--colorLevel;
+
+			return levels[colorLevel];
 		}
 
 		/// <summary>
@@ -127,6 +198,7 @@ namespace GraphicsManipulation.Dithering
 
 			var matrix = Matrices[matrixSize];
 			var matrixCoef = matrixSize * matrixSize + 1;
+			double matrixLevel = ((double)1) / levelsCountLess; //levels[1] / matrixCoef;
 
 			int matrixX = 0;
 			int matrixY = 0;
@@ -135,51 +207,16 @@ namespace GraphicsManipulation.Dithering
 			{
 				for (int y = 0; y < array.Height; ++y)
 				{
+					double matrixValue = matrixLevel * ((double)matrix[matrixY][matrixX]) / matrixCoef;
+
 					double red = array.GetRed(x, y);
 					double green = array.GetGreen(x, y);
 					double blue = array.GetBlue(x, y);
 
 					// approximation
-					double redApprox = levels[levelsCountLess];
-					int redLevel = levelsCountLess;
-					for (int i = 0; i < levelsCountLess; ++i)
-						if (red < levelsBounds[i])
-						{
-							redApprox = levels[i];
-							redLevel = i;
-							break;
-						}
-					double greenApprox = levels[levelsCountLess];
-					int greenLevel = levelsCountLess;
-					for (int i = 0; i < levelsCountLess; ++i)
-						if (green < levelsBounds[i])
-						{
-							greenApprox = levels[i];
-							greenLevel = i;
-							break;
-						}
-					double blueApprox = levels[levelsCountLess];
-					int blueLevel = levelsCountLess;
-					for (int i = 0; i < levelsCountLess; ++i)
-						if (blue < levelsBounds[i])
-						{
-							blueApprox = levels[i];
-							blueLevel = i;
-							break;
-						}
-
-					double matrixValue = ((double)matrix[matrixY][matrixX]) / matrixCoef;
-
-					if (redLevel < levelsCountLess && red > matrixValue)
-						redApprox = levels[redLevel + 1];
-					if (greenLevel < levelsCountLess && green > matrixValue)
-						greenApprox = levels[greenLevel + 1];
-					if (blueLevel < levelsCountLess && blue > matrixValue)
-						blueApprox = levels[blueLevel + 1];
-
-					//processed.SetRedBatch(x, y, red > matrixValue ? 1 : 0);
-					//processed.SetGreenBatch(x, y, green > matrixValue ? 1 : 0);
-					//processed.SetBlueBatch(x, y, blue > matrixValue ? 1 : 0);
+					double redApprox = processOnePixel(red, levels, levelsBounds, levelsCountLess, matrixValue);
+					double greenApprox = processOnePixel(green, levels, levelsBounds, levelsCountLess, matrixValue);
+					double blueApprox = processOnePixel(blue, levels, levelsBounds, levelsCountLess, matrixValue);
 
 					processed.SetRedBatch(x, y, redApprox);
 					processed.SetGreenBatch(x, y, greenApprox);

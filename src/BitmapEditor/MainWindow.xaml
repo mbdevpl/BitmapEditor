@@ -152,7 +152,7 @@
 								<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
 								<ex:DecimalUpDown Grid.Column="2"
 									Value="{Binding SizeOfOrderedDitheringArray}"
-									Minimum="2" Maximum="8" />
+									Minimum="2" Maximum="{Binding MaxSizeOfOrderedDitheringArray}" />
 							</Grid>
 							<Separator Height="0" Visibility="Hidden" />
 							<Grid>
@@ -168,7 +168,7 @@
 									Minimum="2" Maximum="256" />
 							</Grid>
 							<Separator Height="0" Visibility="Hidden" />
-							<Button Content="Apply" Click="OrderedDithering_Apply" />
+							<Button Name="OrderedDithering" Content="Apply" Click="OrderedDithering_Apply" />
 						</StackPanel>
 					</GroupBox>
 					<!--<Button Content="Halftoning" Click="Halftoning_Click" />-->

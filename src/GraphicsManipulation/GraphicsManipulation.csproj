@@ -48,6 +48,7 @@
     <Compile Include="Dithering\ErrorDiffusionConverter.cs" />
     <Compile Include="Dithering\ErrorDiffusionKernelName.cs" />
     <Compile Include="Dithering\OrderedDitheringConverter.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="FastBitmapArray.cs" />
     <Compile Include="Filters\BrightenFilter.cs" />
     <Compile Include="Filters\BrushShapes.cs" />
