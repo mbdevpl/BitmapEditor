@@ -45,8 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitmapArray.cs" />
-    <Compile Include="Dithering\DitheringConverter.cs" />
-    <Compile Include="Dithering\OrderedDithering.cs" />
+    <Compile Include="Dithering\ErrorDiffusionConverter.cs" />
+    <Compile Include="Dithering\ErrorDiffusionKernelName.cs" />
+    <Compile Include="Dithering\OrderedDitheringConverter.cs" />
     <Compile Include="FastBitmapArray.cs" />
     <Compile Include="Filters\BrightenFilter.cs" />
     <Compile Include="Filters\BrushShapes.cs" />

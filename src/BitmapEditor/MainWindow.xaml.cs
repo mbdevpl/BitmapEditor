@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using GraphicsManipulation;
 using GraphicsManipulation.Filters;
 using System.Text;
+using GraphicsManipulation.Dithering;
 
 namespace BitmapEditor
 {
@@ -42,8 +43,12 @@ namespace BitmapEditor
 
 		private Dictionary<RadioButton, FilterTypes> dictionaryRadioButtonToFilterType = null;
 		private Dictionary<FilterTypes, RadioButton> dictionaryFilterTypeToRadioButton = null;
+
 		private Dictionary<RadioButton, BrushShapes> dictionaryRadioButtonToBrushShape = null;
 		private Dictionary<BrushShapes, RadioButton> dictionaryBrushShapeToRadioButton = null;
+
+		private Dictionary<Button, ErrorDiffusionKernelName> dictionaryButtonToErrorDiffusionKernelName = null;
+		private Dictionary<ErrorDiffusionKernelName, Button> dictionaryErrorDiffusionKernelNameToButton = null;
 
 		//private CustomFilterEditor customFilterCreator = null;
 
@@ -101,6 +106,51 @@ namespace BitmapEditor
 			}
 		}
 
+		private decimal errorDiffusionColorLevels = 2;
+		public decimal ErrorDiffusionColorLevels
+		{
+			get { return errorDiffusionColorLevels; }
+			set
+			{
+				if (errorDiffusionColorLevels == value)
+					return;
+				errorDiffusionColorLevels = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("ErrorDiffusionColorLevels"));
+			}
+		}
+
+		private decimal sizeOfOrderedDitheringArray = 3;
+		public decimal SizeOfOrderedDitheringArray
+		{
+			get { return sizeOfOrderedDitheringArray; }
+			set
+			{
+				if (sizeOfOrderedDitheringArray == value)
+					return;
+				sizeOfOrderedDitheringArray = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("SizeOfOrderedDitheringArray"));
+			}
+		}
+
+		private decimal orderedDitheringColorLevels = 2;
+		public decimal OrderedDitheringColorLevels
+		{
+			get { return orderedDitheringColorLevels; }
+			set
+			{
+				if (orderedDitheringColorLevels == value)
+					return;
+				orderedDitheringColorLevels = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("OrderedDitheringColorLevels"));
+			}
+		}
+
 		private string status = "";
 		public string Status
 		{
@@ -123,6 +173,9 @@ namespace BitmapEditor
 			this.DataContext = this;
 
 			SizeOfBrush = 25;
+			ErrorDiffusionColorLevels = 2;
+			SizeOfOrderedDitheringArray = 3;
+			OrderedDitheringColorLevels = 2;
 			Status = "ready";
 			Filter = initialFilter;
 			Shape = initialShape;
@@ -146,34 +199,29 @@ namespace BitmapEditor
 			d1.Add(FilterTypes.Custom, FilterCustomFunction);
 
 			dictionaryRadioButtonToFilterType = new Dictionary<RadioButton, FilterTypes>();
-			//var d2 = dictionaryRadioButtonToFilterType;
 			foreach (var pair in dictionaryFilterTypeToRadioButton)
 				dictionaryRadioButtonToFilterType.Add(pair.Value, pair.Key);
-			//d2.Add(FilterIdentity, FilterTypes.Identity);
-			//d2.Add(FilterInverse, FilterTypes.Inverse);
-			//d2.Add(FilterRed, FilterTypes.OnlyRed);
-			//d2.Add(FilterGreen, FilterTypes.OnlyGreen);
-			//d2.Add(FilterBlue, FilterTypes.OnlyBlue);
-			//d2.Add(FilterGrayscale, FilterTypes.Grayscale);
-			//d2.Add(FilterSepia, FilterTypes.Sepia);
-			//d2.Add(FilterBrighten, FilterTypes.Brighten);
-			//d2.Add(FilterDarken, FilterTypes.Darken);
-			//d2.Add(FilterRandom, FilterTypes.Random);
-			//d2.Add(FilterCustomFunction, FilterTypes.Custom);
 
 			dictionaryBrushShapeToRadioButton = new Dictionary<BrushShapes, RadioButton>();
-			var d3 = dictionaryBrushShapeToRadioButton;
-			d3.Add(BrushShapes.Fill, BrushFiller);
-			d3.Add(BrushShapes.Square, BrushSquare);
-			d3.Add(BrushShapes.Circle, BrushCircle);
+			var d2 = dictionaryBrushShapeToRadioButton;
+			d2.Add(BrushShapes.Fill, BrushFiller);
+			d2.Add(BrushShapes.Square, BrushSquare);
+			d2.Add(BrushShapes.Circle, BrushCircle);
 
 			dictionaryRadioButtonToBrushShape = new Dictionary<RadioButton, BrushShapes>();
-			//var d4 = dictionaryRadioButtonToBrushShape;
 			foreach (var pair in dictionaryBrushShapeToRadioButton)
 				dictionaryRadioButtonToBrushShape.Add(pair.Value, pair.Key);
-			//d4.Add(BrushFiller, BrushShapes.Fill);
-			//d4.Add(BrushSquare, BrushShapes.Square);
-			//d4.Add(BrushCircle, BrushShapes.Circle);
+
+			dictionaryErrorDiffusionKernelNameToButton = new Dictionary<ErrorDiffusionKernelName, Button>();
+			var d3 = dictionaryErrorDiffusionKernelNameToButton;
+			d3.Add(ErrorDiffusionKernelName.FloydSteinberg, ErrorDiffusionFloydSteinberg);
+			d3.Add(ErrorDiffusionKernelName.JarvisJudiceNinke, ErrorDiffusionJarvisJudiceNinke);
+			d3.Add(ErrorDiffusionKernelName.Burke, ErrorDiffusionBurke);
+			d3.Add(ErrorDiffusionKernelName.Stucky, ErrorDiffusionStucky);
+
+			dictionaryButtonToErrorDiffusionKernelName = new Dictionary<Button, ErrorDiffusionKernelName>();
+			foreach (var pair in dictionaryErrorDiffusionKernelNameToButton)
+				dictionaryButtonToErrorDiffusionKernelName.Add(pair.Value, pair.Key);
 
 			if (initialImagePath == null)
 			{
@@ -183,20 +231,37 @@ namespace BitmapEditor
 			else
 			{
 				isGlobalMain = false;
+
 				LoadFromDisk(initialImagePath);
 			}
-
-			//RefreshVars();
 
 			FilterType_Checked(dictionaryFilterTypeToRadioButton[filter], null);
 			BrushShape_Checked(dictionaryBrushShapeToRadioButton[shape], null);
 
 			ReinitializeBitmapArray((BitmapSource)DrawingImage.Source);
+
+			if (!isGlobalMain)
+			{
+				OptionLoad.IsEnabled = false;
+				OptionReload.IsEnabled = false;
+				ErrorDiffusionGroup.IsEnabled = false;
+				OrderedDitheringGroup.IsEnabled = false;
+
+				OptionLoad.Visibility = Visibility.Collapsed;
+				OptionReload.Visibility = Visibility.Collapsed;
+				ErrorDiffusionGroup.Visibility = Visibility.Collapsed;
+				OrderedDitheringGroup.Visibility = Visibility.Collapsed;
+			}
 		}
 
 		private void ReinitializeBitmapArray(BitmapSource source)
 		{
-			bitmapArray = new FastBitmapArray(source);
+			SetBitmapArray(new FastBitmapArray(source));
+		}
+
+		public void SetBitmapArray(FastBitmapArray array)
+		{
+			bitmapArray = array;
 			DrawingImage.Source = bitmapArray.GetBitmap(Mask.Disabled);
 			DrawingImage.Width = bitmapArray.Width;
 			DrawingImage.Height = bitmapArray.Height;
@@ -249,6 +314,16 @@ namespace BitmapEditor
 			if (OptionReload.IsEnabled == false)
 				OptionReload.IsEnabled = true;
 			//RefreshVars(false);
+		}
+
+		public MainWindow Clone()
+		{
+			MainWindow w = new MainWindow(latestFileName == null ? "" : latestFileName);
+
+			w.Width = this.ActualWidth;
+			w.Height = this.ActualHeight;
+
+			return w;
 		}
 
 		//private void RefreshVars(bool reselectRadioButtons = true)
@@ -478,14 +553,30 @@ namespace BitmapEditor
 		{
 			if (!isGlobalMain)
 				return;
-			Window w = new MainWindow(latestFileName == null ? "" : latestFileName);
 
+			if(sender is Button == false)
+				return;
+			var obj = (Button)sender;
+
+			var conv = new ErrorDiffusionConverter();
+			var convertedArray = conv.Process(bitmapArray, dictionaryButtonToErrorDiffusionKernelName[obj],
+				(int)errorDiffusionColorLevels);
+
+			MainWindow w = Clone();
+			w.SetBitmapArray(convertedArray);
 			w.Show();
 		}
 
 		private void OrderedDithering_Apply(object sender, RoutedEventArgs e)
 		{
-			Window w = new MainWindow(latestFileName == null ? "" : latestFileName);
+			if (!isGlobalMain)
+				return;
+
+			var conv = new OrderedDitheringConverter();
+			var convertedArray = conv.Process(bitmapArray, (int)sizeOfOrderedDitheringArray, (int)orderedDitheringColorLevels);
+
+			MainWindow w = Clone();
+			w.SetBitmapArray(convertedArray);
 			w.Show();
 		}
 

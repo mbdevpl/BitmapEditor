@@ -5,6 +5,9 @@ using System.Text;
 
 namespace GraphicsManipulation {
 
+	/// <summary>
+	/// Possible kinds of mask applied when refreshing the underlying image for a bitmap array.
+	/// </summary>
 	public enum Mask {
 		Disabled = 0,
 		Rectangle = 1,

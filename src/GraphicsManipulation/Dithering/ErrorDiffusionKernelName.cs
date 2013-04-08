@@ -5,7 +5,11 @@ using System.Text;
 
 namespace GraphicsManipulation.Dithering
 {
-    class DitheringConverter
-    {
-    }
+	public enum ErrorDiffusionKernelName
+	{
+		FloydSteinberg,
+		JarvisJudiceNinke,
+		Burke,
+		Stucky
+	}
 }

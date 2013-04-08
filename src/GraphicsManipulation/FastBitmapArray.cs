@@ -5,15 +5,25 @@ using System.Windows;
 
 namespace GraphicsManipulation
 {
-
+	/// <summary>
+	/// Contains four two-dimensional arrays containing red, green, blue and alpha channels
+	/// of a source image. Color values are stored as double values from 0.0 to 1.0.
+	/// Moreover the array remembers which pixels where changed since last conversion
+	/// to a .NET object.
+	/// </summary>
 	public class FastBitmapArray
 	{
-
 		private static readonly double MaxByteValue = 255;
 
+		/// <summary>
+		/// Width of the bitmap array in pixels.
+		/// </summary>
 		public int Width { get { return width; } }
 		private int width;
 
+		/// <summary>
+		/// Height of the bitmap array in pixels.
+		/// </summary>
 		public int Height { get { return height; } }
 		private int height;
 
@@ -33,9 +43,9 @@ namespace GraphicsManipulation
 
 		//private double[][] pixels = null;
 
-		private byte[] pixelBytes;
-
 		private int bytesPerPixel;
+
+		private byte[] pixelBytes;
 
 		private int xMinChanged;
 
@@ -60,8 +70,8 @@ namespace GraphicsManipulation
 			A = null;
 
 			bitmap = null;
-			pixelBytes = null;
 			bytesPerPixel = 0;
+			pixelBytes = null;
 
 			xMinChanged = -1;
 			xMaxChanged = -1;
@@ -71,6 +81,12 @@ namespace GraphicsManipulation
 			changed = null;
 		}
 
+		/// <summary>
+		/// Constructs a new empty array. All pixels have color values equal to 0.0,
+		/// and alpha equal to 1.0.
+		/// </summary>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
 		public FastBitmapArray(int width, int height)
 			: this()
 		{
@@ -101,10 +117,10 @@ namespace GraphicsManipulation
 				}
 			}
 
-			// TODO: bitmap allocation
-			bitmap = null;
-			pixelBytes = null;
+			// bitmap allocation
+			bitmap = new WriteableBitmap(width, height, 96.0, 96.0, PixelFormats.Pbgra32, null);
 			bytesPerPixel = 4;
+			pixelBytes = new byte[height * width * bytesPerPixel];
 
 			xMinChanged = width - 1;
 			xMaxChanged = 0;
@@ -124,13 +140,14 @@ namespace GraphicsManipulation
 
 			//width = source.PixelWidth;
 			//height = source.PixelHeight;
-			bytesPerPixel = source.Format.BitsPerPixel / 8;
 
-			bitmap = new WriteableBitmap(width, height, source.DpiX, source.DpiY,
-							source.Format, source.Palette);
-
-			//pixels = new double[height * width * bytesPerPixel];
-			pixelBytes = new byte[height * width * bytesPerPixel];
+			//bitmap = new WriteableBitmap(width, height, 96.0, 96.0, PixelFormats.Pbgra32, null);
+			if (bytesPerPixel != 4)
+			{
+				bytesPerPixel = source.Format.BitsPerPixel / 8;
+				//pixels = new double[height * width * bytesPerPixel];
+				pixelBytes = new byte[height * width * bytesPerPixel];
+			}
 			source.CopyPixels(pixelBytes, width * bytesPerPixel, 0);
 
 			//R = new double[width][];
@@ -216,7 +233,56 @@ namespace GraphicsManipulation
 			Change(x, y);
 			A[x][y] = value;
 		}
-		
+
+		#endregion
+
+		#region batched setting
+
+		public void SetBatchArea()
+		{
+			SetBatchArea(0, 0, width - 1, height - 1);
+		}
+
+		public void SetBatchArea(int minX, int minY, int maxX, int maxY)
+		{
+			if (maxX > xMaxChanged)
+				xMaxChanged = maxX;
+			if (minX < xMinChanged)
+				xMinChanged = minX;
+			if (maxY > yMaxChanged)
+				yMaxChanged = maxY;
+			if (minY < yMinChanged)
+				yMinChanged = minY;
+
+			for (int x = minX; x <= maxX; ++x)
+				for (int y = minY; y <= maxY; ++y)
+					changed[x][y] = true;
+		}
+
+		public void SetRedBatch(int x, int y, double value)
+		{
+			//Change(x, y);
+			R[x][y] = value;
+		}
+
+		public void SetGreenBatch(int x, int y, double value)
+		{
+			//Change(x, y);
+			G[x][y] = value;
+		}
+
+		public void SetBlueBatch(int x, int y, double value)
+		{
+			//Change(x, y);
+			B[x][y] = value;
+		}
+
+		public void SetAlphaBatch(int x, int y, double value)
+		{
+			//Change(x, y);
+			A[x][y] = value;
+		}
+
 		#endregion
 
 		private void Change(int x, int y)
@@ -259,7 +325,7 @@ namespace GraphicsManipulation
 					Int32Rect maskingRect = new Int32Rect(xMinChanged, yMinChanged,
 						xMaxChanged - xMinChanged + 1, yMaxChanged - yMinChanged + 1);
 
-					WriteToPixelBytes(xMinChanged, yMinChanged, xMaxChanged+1, yMaxChanged+1);
+					WriteToPixelBytes(xMinChanged, yMinChanged, xMaxChanged + 1, yMaxChanged + 1);
 
 					int delta = width * bytesPerPixel;
 
