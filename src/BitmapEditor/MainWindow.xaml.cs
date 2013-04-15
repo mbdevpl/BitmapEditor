@@ -13,6 +13,7 @@ using GraphicsManipulation;
 using GraphicsManipulation.Filters;
 using System.Text;
 using GraphicsManipulation.Dithering;
+using System.Windows.Data;
 
 namespace BitmapEditor
 {
@@ -29,8 +30,6 @@ namespace BitmapEditor
 		{
 			filtersAssembly = System.Reflection.Assembly.GetAssembly(typeof(FilterBrush));
 		}
-
-		//private BitmapSource originalImage = null;
 
 		private FastBitmapArray bitmapArray = null;
 
@@ -56,9 +55,7 @@ namespace BitmapEditor
 		private Dictionary<Button, ErrorDiffusionKernelName> dictionaryButtonToErrorDiffusionKernelName = null;
 		private Dictionary<ErrorDiffusionKernelName, Button> dictionaryErrorDiffusionKernelNameToButton = null;
 
-		//private CustomFilterEditor customFilterCreator = null;
-
-		//private List<double> customFilter = null;
+		private Point currentLineStart;
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
@@ -187,6 +184,51 @@ namespace BitmapEditor
 			}
 		}
 
+		private string toolKindName = "";
+		public string ToolKindName
+		{
+			get { return toolKindName; }
+			set
+			{
+				if (toolKindName == value)
+					return;
+				toolKindName = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("ToolKindName"));
+			}
+		}
+
+		private string toolName = "";
+		public string ToolName
+		{
+			get { return toolName; }
+			set
+			{
+				if (toolName == value)
+					return;
+				toolName = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("ToolName"));
+			}
+		}
+
+		private decimal lineThickness = 1;
+		public decimal LineThickness
+		{
+			get { return lineThickness; }
+			set
+			{
+				if (lineThickness == value)
+					return;
+				lineThickness = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("LineThickness"));
+			}
+		}
+
 		private string status = "";
 		public string Status
 		{
@@ -235,6 +277,7 @@ namespace BitmapEditor
 
 			FilterType_Checked(dictionaryFilterTypeToRadioButton[filter], null);
 			BrushShape_Checked(dictionaryBrushShapeToRadioButton[shape], null);
+			FeaturesTabControl.SelectedIndex = 0;
 
 			ReinitializeBitmapArray((BitmapSource)DrawingImage.Source);
 
@@ -444,7 +487,7 @@ namespace BitmapEditor
 			double xJump = 1.0 / bitmapArray.Width;
 			int ySegment = bitmapArray.Height / (1 + 3 + 3 + 3 + 3);
 			//double xJump = 1.0 / bitmapArray.Width;
-			
+
 			for (int x = 0; x < bitmapArray.Width; ++x)
 			{
 				int y = 0;
@@ -626,8 +669,20 @@ namespace BitmapEditor
 
 		private void DrawingArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-			keyIsDown = true;
-			Status = "painting";
+			if (toolKindName.Equals("Filter"))
+			{
+				keyIsDown = true;
+				Status = "painting";
+			}
+			else if (toolKindName.Equals("Line"))
+			{
+				keyIsDown = true;
+				Status = "adding line";
+
+				var canvas = (Canvas)sender;
+				currentLineStart = new Point(e.GetPosition(canvas).X, e.GetPosition(canvas).Y);
+
+			}
 
 			DrawingArea_MouseDownOrMove(sender, e);
 		}
@@ -644,7 +699,6 @@ namespace BitmapEditor
 					keyIsDown = false;
 					ReinitializeMask();
 				}
-
 				return;
 			}
 
@@ -654,13 +708,19 @@ namespace BitmapEditor
 				return;
 			}
 
-			Status = "painting";
+			if (toolKindName.Equals("Filter"))
+			{
+				Status = "painting";
 
-			if (Shape == BrushShapes.Fill)
-				return;
+				if (Shape == BrushShapes.Fill)
+					return;
+			}
+			else if (toolKindName.Equals("Line"))
+			{
+				Status = "adding line";
+			}
 
 			DrawingArea_MouseDownOrMove(sender, e);
-
 		}
 
 		private void DrawingArea_MouseDownOrMove(object sender, MouseEventArgs e)
@@ -675,44 +735,71 @@ namespace BitmapEditor
 			if (x < 0 || y < 0 || x > bitmapArray.Width || y > bitmapArray.Height)
 				return;
 
-			// brush border
-			if (Shape != BrushShapes.Fill)
+			if (toolKindName.Equals("Filter"))
 			{
-				if (DrawingBrush.Visibility != Visibility.Visible)
-					DrawingBrush.Visibility = Visibility.Visible;
-				double half = ((double)sizeOfBrush) / 2;
-				DrawingBrush.Margin = new Thickness(x - half, y - half, 0, 0);
+				// brush border
+				if (Shape != BrushShapes.Fill)
+				{
+					if (DrawingBrush.Visibility != Visibility.Visible)
+						DrawingBrush.Visibility = Visibility.Visible;
+					double half = ((double)sizeOfBrush) / 2;
+					DrawingBrush.Margin = new Thickness(x - half, y - half, 0, 0);
+				}
+
+				//System.Text.StringBuilder s = new System.Text.StringBuilder();
+				//s.Append("left click at: ").Append(new Point(x, y));
+				//s.Append(' ').Append(Filter).Append(' ').Append(Shape);
+				//s.Append(' ').Append((int)BrushSize.Value);
+				//MessageBox.Show(s.ToString(), sender.GetType().ToString());
+
+				// get filter instance using reflection
+				var typeName = new StringBuilder("GraphicsManipulation.Filters.").Append(Filter).Append("Filter").ToString();
+				FilterBrush brush = (FilterBrush)filtersAssembly.CreateInstance(typeName);
+
+				if (brush is CustomFilter)
+					((CustomFilter)brush).FilterFunction = latestCustomFilter;
+
+				brush.ApplyAt(bitmapArray, Shape, new Point(x, y), (int)SizeOfBrush, mask);
+
+				if (Shape == BrushShapes.Fill)
+					bitmapArray.RefreshBitmap(Mask.Disabled);
+				else
+					bitmapArray.RefreshBitmap(Mask.Rectangle);
 			}
+			else if (toolKindName.Equals("Line"))
+			{
+				//bitmapArray.DrawLine((int)currentLineStart.X, (int)currentLineStart.Y, (int)x, (int)y, 1, 1, 1);
 
-			//System.Text.StringBuilder s = new System.Text.StringBuilder();
-			//s.Append("left click at: ").Append(new Point(x, y));
-			//s.Append(' ').Append(Filter).Append(' ').Append(Shape);
-			//s.Append(' ').Append((int)BrushSize.Value);
-			//MessageBox.Show(s.ToString(), sender.GetType().ToString());
-
-			// get filter instance using reflection
-			var typeName = new StringBuilder("GraphicsManipulation.Filters.").Append(Filter).Append("Filter").ToString();
-			FilterBrush brush = (FilterBrush)filtersAssembly.CreateInstance(typeName);
-
-			if (brush is CustomFilter)
-				((CustomFilter)brush).FilterFunction = latestCustomFilter;
-
-			brush.ApplyAt(bitmapArray, Shape, new Point(x, y), (int)SizeOfBrush, mask);
-
-			if (Shape == BrushShapes.Fill)
-				bitmapArray.RefreshBitmap(Mask.Disabled);
-			else
-				bitmapArray.RefreshBitmap(Mask.Rectangle);
+				//bitmapArray.RefreshBitmap(Mask.Rectangle);
+			}
 		}
 
 		private void DrawingArea_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
 			Status = "ready";
-			if (keyIsDown)
+
+			if (toolKindName.Equals("Filter"))
 			{
+				if (keyIsDown)
+				{
+					keyIsDown = false;
+					ReinitializeMask();
+					DrawingBrush.Visibility = Visibility.Hidden;
+				}
+			}
+			else if (toolKindName.Equals("Line"))
+			{
+				if (!keyIsDown)
+					return;
+
+				var canvas = (Canvas)sender;
+				double x = e.GetPosition(canvas).X;
+				double y = e.GetPosition(canvas).Y;
+
+				bitmapArray.DrawLine((int)currentLineStart.X, (int)currentLineStart.Y, (int)x, (int)y, 1, 1, 1, (int)lineThickness);
+				bitmapArray.RefreshBitmap(Mask.Rectangle);
+
 				keyIsDown = false;
-				ReinitializeMask();
-				DrawingBrush.Visibility = Visibility.Hidden;
 			}
 		}
 
@@ -753,9 +840,40 @@ namespace BitmapEditor
 
 		#endregion
 
-		//private void Halftoning_Click(object sender, RoutedEventArgs e)
-		//{
-		//}
+		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.Source is TabControl == false)
+				return;
+
+			var control = ((TabControl)e.Source);
+			//var tabs = control.Items;
+			var selected = control.SelectedIndex;
+
+			if (selected == 0)
+			{
+				ToolKindName = "Filter";
+				//ToolName = Filter.ToString();
+				Binding b = new Binding();
+				b.Source = this;
+				b.Path = new PropertyPath("Filter");
+				b.Mode = BindingMode.OneWay;
+				b.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+				BindingOperations.SetBinding(ToolInfo, TextBlock.TextProperty, b);
+			}
+			else
+				BindingOperations.ClearBinding(ToolInfo, TextBlock.TextProperty);
+
+			if (selected == 1)
+			{
+				ToolKindName = "Dithering";
+				ToolName = String.Empty;
+			}
+			else if (selected == 2)
+			{
+				ToolKindName = "Line";
+				ToolName = String.Empty;
+			}
+		}
 
 	}
 }

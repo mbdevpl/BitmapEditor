@@ -7,9 +7,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:BitmapEditor"
-        xmlns:ex="http://schemas.microsoft.com/winfx/2006/xaml/presentation/toolkit/extended"
+        xmlns:ex="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:con="http://schemas.kent.boogaart.com/converters"
-        Name="EditorWindow" Width="850" Height="650" 
+        Name="EditorWindow" Width="800" Height="500" 
         MinWidth="350" MinHeight="300"
 		  Icon="Icon.ico"
         Title="Bitmap Editor - computer graphics project by Mateusz Bysiek @ MiNI, WUT">
@@ -51,42 +51,25 @@
 			</Grid.ColumnDefinitions>
 			<StackPanel Grid.Column="0">
 				<StackPanel Orientation="Vertical">
-					<GroupBox Header="Function filters">
-						<StackPanel Name="FilterTypePanel" Orientation="Vertical">
-							<RadioButton Name="FilterIdentity" Content="Identity"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterInverse" Content="Inverse" IsChecked="True"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterRed" Content="Only red"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterGreen" Content="Only green"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterBlue" Content="Only blue"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterGrayscale" Content="Graysacle"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterSepia" Content="Sepia"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterBrighten" Content="Brighten"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterDarken" Content="Darken"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterRandom" Content="Random"
-									Checked="FilterType_Checked" />
-							<RadioButton Name="FilterCustomFunction" Content="Custom"
-									Click="FilterType_Checked" />
-							<!--Checked="FilterType_Checked"-->
-						</StackPanel>
-					</GroupBox>
 					<GroupBox Header="Brushes">
-						<StackPanel Orientation="Vertical">
-							<RadioButton Name="BrushFiller" Content="Filler" 
-                                     Checked="BrushShape_Checked" />
-							<RadioButton Name="BrushSquare" Content="Square" 
-                                     Checked="BrushShape_Checked" IsChecked="True" />
-							<RadioButton Name="BrushCircle" Content="Cirle" 
-                                     Checked="BrushShape_Checked" />
-						</StackPanel>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition />
+								<ColumnDefinition />
+							</Grid.ColumnDefinitions>
+							<StackPanel Grid.Column="0" Orientation="Vertical">
+								<RadioButton Name="BrushSquare" Content="Square" 
+                              Checked="BrushShape_Checked" IsChecked="True" />
+								<RadioButton Name="BrushCircle" Content="Cirle" 
+                              Checked="BrushShape_Checked" />
+							</StackPanel>
+							<StackPanel Grid.Column="1" Orientation="Vertical">
+								<RadioButton Name="BrushFiller" Content="Filler" 
+                              Checked="BrushShape_Checked" />
+								<RadioButton Name="BrushPoint" Content="Point" 
+                              Checked="BrushShape_Checked" IsEnabled="False" />
+							</StackPanel>
+						</Grid>
 					</GroupBox>
 					<GroupBox Header="Brush size">
 						<StackPanel Orientation="Vertical">
@@ -95,86 +78,111 @@
 									Value="{Binding SizeOfBrush}" />
 						</StackPanel>
 					</GroupBox>
-					<GroupBox Name="ErrorDiffusionGroup" Header="Error diffusion">
-						<!--<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition />
-								<ColumnDefinition Width="Auto" />
-							</Grid.ColumnDefinitions>
-							<Grid.RowDefinitions>
-								<RowDefinition />
-								<RowDefinition />
-							</Grid.RowDefinitions>-->
-						<StackPanel Orientation="Vertical" Margin="0,2,0,0">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition />
-								</Grid.ColumnDefinitions>
-								<TextBlock Grid.Column="0" Text="Levels" VerticalAlignment="Center" />
-								<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
-								<ex:DecimalUpDown Grid.Column="2"
+				</StackPanel>
+				<TabControl Name="FeaturesTabControl" SelectionChanged="TabControl_SelectionChanged">
+					<TabItem Header="Filters">
+						<GroupBox Header="Function filters">
+							<StackPanel Name="FilterTypePanel" Orientation="Vertical">
+								<RadioButton Name="FilterIdentity" Content="Identity"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterInverse" Content="Inverse" IsChecked="True"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterRed" Content="Only red"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterGreen" Content="Only green"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterBlue" Content="Only blue"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterGrayscale" Content="Graysacle"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterSepia" Content="Sepia"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterBrighten" Content="Brighten"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterDarken" Content="Darken"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterRandom" Content="Random"
+									Checked="FilterType_Checked" />
+								<RadioButton Name="FilterCustomFunction" Content="Custom"
+									Click="FilterType_Checked" />
+								<!--Checked="FilterType_Checked"-->
+							</StackPanel>
+						</GroupBox>
+					</TabItem>
+					<TabItem Header="Dithering">
+						<StackPanel Orientation="Vertical" Margin="0,0,0,0">
+							<GroupBox Name="ErrorDiffusionGroup" Header="Error diffusion">
+								<StackPanel Orientation="Vertical" Margin="0,2,0,0">
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition />
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" Text="Levels" VerticalAlignment="Center" />
+										<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
+										<ex:DecimalUpDown Grid.Column="2"
 									Value="{Binding ErrorDiffusionColorLevels}"
 									Minimum="2" Maximum="256" />
-							</Grid>
-							<Separator Height="1" Visibility="Hidden" />
-							<Button Name="ErrorDiffusionFloydSteinberg"
-									Content="Floyd-Steinberg" FontSize="8pt"
-									Click="ErrorDiffusion_Apply" />
-							<Button Name="ErrorDiffusionJarvisJudiceNinke"
-									Content="Jarvis, Judice, Ninke" FontSize="7pt"
-									Click="ErrorDiffusion_Apply" />
-							<Button Name="ErrorDiffusionBurke"
-									Content="Burke's" Click="ErrorDiffusion_Apply" />
-							<Button Name="ErrorDiffusionStucky"
-									Content="Stucky's" Click="ErrorDiffusion_Apply" />
-
-							<!--<ComboBox Grid.ColumnSpan="2" Name="ErrorDiffusionComboBox"
-								SelectedIndex="0"
-								SelectionChanged="ErrorDiffusion_Apply">
-							<ComboBoxItem Content="Floyd-Steinberg" />
-							<ComboBoxItem Content="Burke's" />
-							<ComboBoxItem Content="Stucky's" />
-						</ComboBox>-->
-							<!--<Button Content="Apply" Grid.Column="1" Grid.Row="1"
-									Click="ErrorDiffusion_Click" />-->
-						</StackPanel>
-						<!--</Grid>-->
-					</GroupBox>
-					<GroupBox Name="OrderedDitheringGroup" Header="Ordered dithering">
-						<StackPanel Orientation="Vertical" Margin="0,2,0,0">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition />
-								</Grid.ColumnDefinitions>
-								<TextBlock Grid.Column="0" Text="Matrix size" VerticalAlignment="Center" />
-								<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
-								<ex:DecimalUpDown Grid.Column="2"
+									</Grid>
+									<Separator Height="1" Visibility="Hidden" />
+									<Button Name="ErrorDiffusionFloydSteinberg"
+											Content="Floyd-Steinberg" Click="ErrorDiffusion_Apply" />
+									<Button Name="ErrorDiffusionJarvisJudiceNinke"
+											Content="Jarvis, Judice, Ninke" Click="ErrorDiffusion_Apply" />
+									<Button Name="ErrorDiffusionBurke"
+											Content="Burke's" Click="ErrorDiffusion_Apply" />
+									<Button Name="ErrorDiffusionStucky"
+											Content="Stucky's" Click="ErrorDiffusion_Apply" />
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Name="OrderedDitheringGroup" Header="Ordered dithering">
+								<StackPanel Orientation="Vertical" Margin="0,2,0,0">
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition />
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" Text="Matrix size" VerticalAlignment="Center" />
+										<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
+										<ex:DecimalUpDown Grid.Column="2"
 									Value="{Binding SizeOfOrderedDitheringArray}"
 									Minimum="2" Maximum="{Binding MaxSizeOfOrderedDitheringArray}" />
-							</Grid>
-							<Separator Height="0" Visibility="Hidden" />
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition />
-								</Grid.ColumnDefinitions>
-								<TextBlock Grid.Column="0" Text="Levels" VerticalAlignment="Center" />
-								<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
-								<ex:DecimalUpDown Grid.Column="2"
+									</Grid>
+									<Separator Height="0" Visibility="Hidden" />
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition />
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" Text="Levels" VerticalAlignment="Center" />
+										<Separator Grid.Column="1" Visibility="Hidden" Width="4" />
+										<ex:DecimalUpDown Grid.Column="2"
 									Value="{Binding OrderedDitheringColorLevels}"
 									Minimum="2" Maximum="256" />
-							</Grid>
-							<Separator Height="0" Visibility="Hidden" />
-							<Button Name="OrderedDithering" Content="Apply" Click="OrderedDithering_Apply" />
+									</Grid>
+									<Separator Height="0" Visibility="Hidden" />
+									<Button Name="OrderedDithering" Content="Apply" Click="OrderedDithering_Apply" />
+								</StackPanel>
+							</GroupBox>
 						</StackPanel>
-					</GroupBox>
-					<!--<Button Content="Halftoning" Click="Halftoning_Click" />-->
-				</StackPanel>
+					</TabItem>
+					<TabItem Header="Lines">
+						<StackPanel>
+							<GroupBox Header="Line thickness">
+								<ex:DecimalUpDown Value="{Binding LineThickness}" Minimum="1" Maximum="50" />
+							</GroupBox>
+							<GroupBox Header="Line color">
+								<StackPanel>
+									<ex:ColorPicker DisplayColorAndName="True" SelectedColor="White" IsEnabled="False" />
+									<TextBox Text="#ffffff" FontFamily="Consolas" IsEnabled="False" />
+								</StackPanel>
+							</GroupBox>
+						</StackPanel>
+					</TabItem>
+				</TabControl>
 			</StackPanel>
 			<Grid Grid.Column="1" Margin="0,0,0,0" Name="CanvasGrid">
 				<Grid.RowDefinitions>
@@ -201,10 +209,6 @@
 			</Grid>
 		</Grid>
 		<StackPanel Orientation="Horizontal" Grid.Row="2">
-			<TextBlock Text="Filter: "
-					Style="{StaticResource InfoTextLabel}" />
-			<TextBlock Name="FilterInfo" Text="{Binding Filter, Mode=OneWay}"
-					Style="{StaticResource InfoText}" />
 			<TextBlock Text="Brush: "
 					Style="{StaticResource InfoTextLabel}" />
 			<TextBlock Name="BrushShapeInfo" Text="{Binding Shape, Mode=OneWay}"
@@ -212,6 +216,12 @@
 			<TextBlock Text="Size: "
 					Style="{StaticResource InfoTextLabel}" />
 			<TextBlock Name="BrushSizeInfo" Text="{Binding Mode=OneWay, ElementName=BrushSize, Path=Value}"
+					Style="{StaticResource InfoText}" />
+			<TextBlock Text="Tool: "
+					Style="{StaticResource InfoTextLabel}" />
+			<TextBlock Name="ToolKindInfo" Text="{Binding ToolKindName, Mode=OneWay}"
+					Style="{StaticResource InfoText}" />
+			<TextBlock Name="ToolInfo" Text="{Binding ToolName, Mode=OneWay}"
 					Style="{StaticResource InfoText}" />
 			<TextBlock Text="Status: "
 					Style="{StaticResource InfoTextLabel}" />

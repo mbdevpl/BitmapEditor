@@ -2,6 +2,7 @@
 using System.Windows.Media;
 using System;
 using System.Windows;
+using System.Collections.ObjectModel;
 
 namespace GraphicsManipulation
 {
@@ -27,7 +28,20 @@ namespace GraphicsManipulation
 		public int Height { get { return height; } }
 		private int height;
 
-		//public double[][] Red { get { return R; } }
+		public ReadOnlyCollection<ReadOnlyCollection<double>> Red
+		{
+			get
+			{
+				if (R == null)
+					return null;
+				ReadOnlyCollection<double>[] result = new ReadOnlyCollection<double>[width];
+				for (int x = 0; x < width; x++)
+				{
+					result[x] = new ReadOnlyCollection<double>(R[x]);
+				}
+				return new ReadOnlyCollection<ReadOnlyCollection<double>>(result);
+			}
+		}
 		private double[][] R;
 
 		//public double[][] Green { get { return G; } }
@@ -40,8 +54,6 @@ namespace GraphicsManipulation
 		private double[][] A;
 
 		private WriteableBitmap bitmap;
-
-		//private double[][] pixels = null;
 
 		private int bytesPerPixel;
 
@@ -138,29 +150,12 @@ namespace GraphicsManipulation
 			if (!source.Format.Equals(PixelFormats.Pbgra32))
 				source = new FormatConvertedBitmap(source, PixelFormats.Pbgra32, null, 0);
 
-			//width = source.PixelWidth;
-			//height = source.PixelHeight;
-
-			//bitmap = new WriteableBitmap(width, height, 96.0, 96.0, PixelFormats.Pbgra32, null);
 			if (bytesPerPixel != 4)
 			{
 				bytesPerPixel = source.Format.BitsPerPixel / 8;
-				//pixels = new double[height * width * bytesPerPixel];
 				pixelBytes = new byte[height * width * bytesPerPixel];
 			}
 			source.CopyPixels(pixelBytes, width * bytesPerPixel, 0);
-
-			//R = new double[width][];
-			//G = new double[width][];
-			//B = new double[width][];
-			//A = new double[width][];
-
-			//changed = new bool[width][];
-			//xMinChanged = width - 1;
-			//xMaxChanged = 0;
-			//yMinChanged = height - 1;
-			//yMaxChanged = 0;
-			//anythingChanged = false;
 
 			WriteToChannels(0, 0, width, height);
 		}
@@ -288,6 +283,15 @@ namespace GraphicsManipulation
 			A[x][y] = value;
 		}
 
+		public void SetPixelBatch(int x, int y, double red, double green, double blue, double? alpha = null)
+		{
+			SetRedBatch(x, y, red);
+			SetGreenBatch(x, y, green);
+			SetBlueBatch(x, y, blue);
+			if (alpha != null)
+				SetAlphaBatch(x, y, alpha.Value);
+		}
+
 		#endregion
 
 		private void Change(int x, int y)
@@ -306,6 +310,143 @@ namespace GraphicsManipulation
 				return;
 
 			anythingChanged = true;
+		}
+
+		public void DrawLine(int xStart, int yStart, int xEnd, int yEnd,
+			double red, double green, double blue, int thickness = 1)
+		{
+			int dx = xEnd - xStart;
+			int dy = yEnd - yStart;
+
+			bool primaryX = true;
+			if (Math.Abs(dy) > Math.Abs(dx))
+				primaryX = false;
+
+			if (thickness > 1)
+			{
+
+				double tangent = 0;
+				//if (primaryX && dy == 0 || !primaryX && dx == 0)
+				//	tangent = 1;
+				//else
+				tangent = primaryX ? ((double)dy) / dx : ((double)dx) / dy;
+
+				double xThicknessDouble = thickness * Math.Abs(primaryX ? Math.Sin(tangent) : Math.Cos(tangent));
+				double yThicknessDouble = thickness * Math.Abs(primaryX ? Math.Cos(tangent) : Math.Sin(tangent));
+
+				int xThickness = (int)Math.Round(xThicknessDouble);
+				double xRem = xThicknessDouble - xThickness;
+				int yThickness = (int)Math.Round(yThicknessDouble);
+				double yRem = yThicknessDouble - yThickness;
+
+				double thickRem = xRem + yRem;
+
+				if (thickRem > 0.5 && xRem < 0.5 && yRem < 0.5)
+				{
+					if (xThickness > 0)
+						++xThickness;
+					else
+						++yThickness;
+				}
+				
+				int xOffset = xThickness / 2;
+				int yOffset = yThickness / 2;
+
+				if (xThickness <= 1)
+				{
+					for (int i = 0; i < yThickness; ++i)
+						DrawLine(xStart, yStart - yOffset + i, xEnd, yEnd - yOffset + i, red, green, blue, 1);
+					return;
+				}
+
+				if (yThickness <= 1)
+				{
+					for (int i = 0; i < xThickness; ++i)
+						DrawLine(xStart - xOffset + i, yStart, xEnd - xOffset + i, yEnd, red, green, blue, 1);
+					return;
+				}
+
+				for (int i = 0; i < yThickness; ++i)
+					DrawLine(xStart, yStart + i, xEnd, yEnd + i, red, green, blue, 1);
+
+				int sign = 1;
+				if (dx * dy < 0)
+					sign = -1;
+
+				for (int i = 0; i < xThickness; ++i)
+					DrawLine(xStart + (i * sign), yStart, xEnd + (i * sign), yEnd, red, green, blue, 1);
+
+				return;
+			}
+			bool invertX = false;
+			if (primaryX && xStart > xEnd)
+				invertX = true;
+			if (!primaryX && yStart > yEnd)
+				invertX = true;
+
+			if (invertX)
+			{
+				int temp = xStart;
+				xStart = xEnd;
+				xEnd = temp;
+				temp = yStart;
+				yStart = yEnd;
+				yEnd = temp;
+
+				dx = xEnd - xStart;
+				dy = yEnd - yStart;
+			}
+
+			SetBatchArea(Math.Min(xStart, xEnd), Math.Min(yStart, yEnd),
+				Math.Max(xStart, xEnd), Math.Max(yStart, yEnd));
+
+			if (!primaryX)
+			{
+				int temp = dy;
+				dy = dx;
+				dx = temp;
+			}
+
+			int signY = 1;
+			if (dy < 0)
+			{
+				dy *= -1;
+				signY = -1;
+			}
+
+			int d = 2 * dy - dx;
+			int dE = 2 * dy;
+			int dNE = 2 * (dy - dx);
+
+			int x = primaryX ? xStart : yStart;
+			int y = primaryX ? yStart : xStart;
+
+			if (primaryX)
+				SetPixelBatch(x, y, red, green, blue);
+			else
+				SetPixelBatch(y, x, red, green, blue);
+
+			if (!primaryX)
+				xEnd = yEnd;
+
+			while (x < xEnd)
+			{
+				if (d < 0)
+				{
+					d += dE;
+				}
+				else
+				{
+					d += dNE;
+					y += signY;
+				}
+				++x;
+
+				if (primaryX)
+					SetPixelBatch(x, y, red, green, blue);
+				else
+					SetPixelBatch(y, x, red, green, blue);
+			}
 		}
 
 		public void RefreshBitmap(Mask mask = Mask.Rectangle)
@@ -409,12 +550,6 @@ namespace GraphicsManipulation
 			int delta = width * bytesPerPixel;
 			for (int x = xMin; x < xMax; x++)
 			{
-				//R[x] = new double[height];
-				//G[x] = new double[height];
-				//B[x] = new double[height];
-				//A[x] = new double[height];
-				//changed[x] = new bool[height];
-
 				index = x * bytesPerPixel;
 				for (int y = yMin; y < yMax; y++)
 				{
@@ -459,4 +594,3 @@ namespace GraphicsManipulation
 	}
 
 }
-
