@@ -23,6 +23,12 @@ namespace BitmapEditor
 	{
 		private static readonly FilterTypes initialFilter = FilterTypes.Inverse;
 		private static readonly BrushShapes initialShape = BrushShapes.Square;
+		private static readonly System.Reflection.Assembly filtersAssembly;
+
+		static MainWindow()
+		{
+			filtersAssembly = System.Reflection.Assembly.GetAssembly(typeof(FilterBrush));
+		}
 
 		//private BitmapSource originalImage = null;
 
@@ -232,17 +238,22 @@ namespace BitmapEditor
 
 			ReinitializeBitmapArray((BitmapSource)DrawingImage.Source);
 
+			OptionLoadTest.IsEnabled = false;
+			OptionLoadTest.Visibility = Visibility.Collapsed;
+
 			if (!isGlobalMain)
 			{
 				OptionLoad.IsEnabled = false;
 				OptionReload.IsEnabled = false;
 				ErrorDiffusionGroup.IsEnabled = false;
 				OrderedDitheringGroup.IsEnabled = false;
+				OptionGeneratePalette.IsEnabled = false;
 
 				OptionLoad.Visibility = Visibility.Collapsed;
 				OptionReload.Visibility = Visibility.Collapsed;
 				ErrorDiffusionGroup.Visibility = Visibility.Collapsed;
 				OrderedDitheringGroup.Visibility = Visibility.Collapsed;
+				OptionGeneratePalette.Visibility = Visibility.Collapsed;
 
 				if (levels > 1)
 				{
@@ -417,6 +428,135 @@ namespace BitmapEditor
 				LoadFromDisk(dlg.FileName);
 		}
 
+		private void OptionLoadTest_Click(object sender, RoutedEventArgs e)
+		{
+			//LoadFromDisk(dlg.FileName);
+			if (OptionReload.IsEnabled == true)
+				OptionReload.IsEnabled = false;
+		}
+
+		private void OptionGeneratePalette_Click(object sender, RoutedEventArgs e)
+		{
+			bitmapArray = new FastBitmapArray((int)DrawingScrollView.ViewportWidth, (int)DrawingScrollView.ViewportHeight);
+
+			bitmapArray.SetBatchArea(0, 0, bitmapArray.Width - 1, bitmapArray.Height - 1);
+
+			double xJump = 1.0 / bitmapArray.Width;
+			int ySegment = bitmapArray.Height / (1 + 3 + 3 + 3 + 3);
+			//double xJump = 1.0 / bitmapArray.Width;
+			
+			for (int x = 0; x < bitmapArray.Width; ++x)
+			{
+				int y = 0;
+				int yMax = ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+					//bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					//bitmapArray.SetRedBatch(x, y, x * xJump);
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+					//bitmapArray.SetGreenBatch(x, y, x * xJump);
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+					bitmapArray.SetGreenBatch(x, y, 1);
+					bitmapArray.SetBlueBatch(x, y, 1);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, 1);
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+					bitmapArray.SetBlueBatch(x, y, 1);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, 1);
+					bitmapArray.SetGreenBatch(x, y, 1);
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+					bitmapArray.SetBlueBatch(x, y, 1);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, 1);
+					bitmapArray.SetGreenBatch(x, y, x * xJump);
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+				yMax += ySegment;
+				for (; y < yMax; ++y)
+				{
+					bitmapArray.SetRedBatch(x, y, x * xJump);
+					bitmapArray.SetGreenBatch(x, y, 1);
+					bitmapArray.SetBlueBatch(x, y, x * xJump);
+				}
+
+			}
+
+			DrawingImage.Source = bitmapArray.GetBitmap(Mask.Disabled);
+			DrawingImage.Width = bitmapArray.Width;
+			DrawingImage.Height = bitmapArray.Height;
+			ReinitializeMask();
+
+			if (OptionReload.IsEnabled == true)
+				OptionReload.IsEnabled = false;
+		}
+
 		private void OptionReload_Click(object sender, RoutedEventArgs e)
 		{
 			LoadFromDisk(latestFileName);
@@ -516,6 +656,9 @@ namespace BitmapEditor
 
 			Status = "painting";
 
+			if (Shape == BrushShapes.Fill)
+				return;
+
 			DrawingArea_MouseDownOrMove(sender, e);
 
 		}
@@ -529,16 +672,17 @@ namespace BitmapEditor
 			double x = e.GetPosition(canvas).X;
 			double y = e.GetPosition(canvas).Y;
 
-			//BitmapArray arr = new BitmapArray((BitmapSource)DrawingImage.Source);
-
 			if (x < 0 || y < 0 || x > bitmapArray.Width || y > bitmapArray.Height)
 				return;
 
 			// brush border
-			if (DrawingBrush.Visibility != Visibility.Visible)
-				DrawingBrush.Visibility = Visibility.Visible;
-			double half = ((double)sizeOfBrush) / 2;
-			DrawingBrush.Margin = new Thickness(x - half, y - half, 0, 0);
+			if (Shape != BrushShapes.Fill)
+			{
+				if (DrawingBrush.Visibility != Visibility.Visible)
+					DrawingBrush.Visibility = Visibility.Visible;
+				double half = ((double)sizeOfBrush) / 2;
+				DrawingBrush.Margin = new Thickness(x - half, y - half, 0, 0);
+			}
 
 			//System.Text.StringBuilder s = new System.Text.StringBuilder();
 			//s.Append("left click at: ").Append(new Point(x, y));
@@ -546,33 +690,19 @@ namespace BitmapEditor
 			//s.Append(' ').Append((int)BrushSize.Value);
 			//MessageBox.Show(s.ToString(), sender.GetType().ToString());
 
-			var typeName = new StringBuilder().Append("GraphicsManipulation.Filters.").Append(Filter).Append("Filter").ToString();
-
-			var typeRef = System.Reflection.Assembly.GetAssembly(typeof(FilterBrush)).GetType(typeName);
-
-			//var typeRef = Type.GetType(typeName, true, false);
-
-			FilterBrush brush = (FilterBrush)System.Reflection.Assembly.GetAssembly(typeRef).CreateInstance(typeName);
+			// get filter instance using reflection
+			var typeName = new StringBuilder("GraphicsManipulation.Filters.").Append(Filter).Append("Filter").ToString();
+			FilterBrush brush = (FilterBrush)filtersAssembly.CreateInstance(typeName);
 
 			if (brush is CustomFilter)
 				((CustomFilter)brush).FilterFunction = latestCustomFilter;
 
 			brush.ApplyAt(bitmapArray, Shape, new Point(x, y), (int)SizeOfBrush, mask);
 
-			//if (filter == FilterTypes.Custom)
-			//{
-			//	var fltr = new CustomFilter();
-			//	fltr.FilterFunction = latestCustomFilter;
-			//	fltr.ApplyAt(arr, Shape, new Point(x, y), (int)BrushSize.Value, mask);
-			//}
-			//else
-			//	arr.Filter(Filter, Shape, new Point(x, y), (int)BrushSize.Value, mask);
-
-			//var img = arr.GetImageCopy();
-			//DrawingImage.Source = img;
-
-			bitmapArray.RefreshBitmap(Mask.Disabled);
-			//bitmapArray.RefreshBitmap(Mask.Rectangle);
+			if (Shape == BrushShapes.Fill)
+				bitmapArray.RefreshBitmap(Mask.Disabled);
+			else
+				bitmapArray.RefreshBitmap(Mask.Rectangle);
 		}
 
 		private void DrawingArea_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

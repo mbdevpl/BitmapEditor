@@ -257,6 +257,11 @@ namespace GraphicsManipulation
 			for (int x = minX; x <= maxX; ++x)
 				for (int y = minY; y <= maxY; ++y)
 					changed[x][y] = true;
+
+			if (anythingChanged)
+				return;
+
+			anythingChanged = true;
 		}
 
 		public void SetRedBatch(int x, int y, double value)
@@ -322,49 +327,74 @@ namespace GraphicsManipulation
 			{
 				if (mask == Mask.Rectangle)
 				{
-					Int32Rect maskingRect = new Int32Rect(xMinChanged, yMinChanged,
-						xMaxChanged - xMinChanged + 1, yMaxChanged - yMinChanged + 1);
+					int xSize = xMaxChanged - xMinChanged + 1, ySize = yMaxChanged - yMinChanged + 1;
+					int delta = xSize * bytesPerPixel;
 
-					WriteToPixelBytes(xMinChanged, yMinChanged, xMaxChanged + 1, yMaxChanged + 1);
+					Int32Rect maskingRect = new Int32Rect(xMinChanged, yMinChanged, xSize, ySize);
 
-					int delta = width * bytesPerPixel;
+					byte[] pixelsRect = new byte[xSize * ySize * bytesPerPixel];
+					int index;
+					for (int x = 0; x < xSize; x++)
+					{
+						int xx = xMinChanged + x;
+						index = x * bytesPerPixel;
+						for (int y = 0; y < ySize; y++)
+						{
+							int yy = yMinChanged + y;
+							pixelsRect[index + 2] = (byte)(MaxByteValue * R[xx][yy]);
+							pixelsRect[index + 1] = (byte)(MaxByteValue * G[xx][yy]);
+							pixelsRect[index + 0] = (byte)(MaxByteValue * B[xx][yy]);
+							pixelsRect[index + 3] = (byte)(MaxByteValue * A[xx][yy]);
+							index += delta;
+
+							changed[xx][yy] = false;
+						}
+					}
 
 					bitmap.Lock();
-					bitmap.WritePixels(maskingRect, pixelBytes, delta,
-						((yMinChanged * width) + xMinChanged) * bytesPerPixel);
+					bitmap.WritePixels(maskingRect, pixelsRect, delta, 0);
 					bitmap.Unlock();
 				}
 				else if (mask == Mask.PerPixel)
 				{
-					Int32Rect maskingRect = new Int32Rect(0, 0, width, height);
+					Int32Rect maskingRect = new Int32Rect(0, 0, 1, 1);
 
-					for (int x = xMinChanged; x <= xMaxChanged; x++)
+					bitmap.Lock();
+
+					byte[] pixel = new byte[bytesPerPixel];
+					for (int y = yMinChanged; y <= yMaxChanged; y++)
 					{
-						for (int y = yMinChanged; y <= yMaxChanged; y++)
+						for (int x = xMinChanged; x <= xMaxChanged; x++)
 						{
 							if (!changed[x][y])
 								continue;
 
-							bitmap.Lock();
-							//bitmap.WritePixels(maskingRect, pixelBytes, width * bytesPerPixel, 0);
-							bitmap.Unlock();
+							maskingRect.X = x;
+							maskingRect.Y = y;
+
+							pixel[2] = (byte)(MaxByteValue * R[x][y]);
+							pixel[1] = (byte)(MaxByteValue * G[x][y]);
+							pixel[0] = (byte)(MaxByteValue * B[x][y]);
+							pixel[3] = (byte)(MaxByteValue * A[x][y]);
+
+							bitmap.WritePixels(maskingRect, pixel, bytesPerPixel, 0);
+
+							changed[x][y] = false;
 						}
 					}
+
+					bitmap.Unlock();
+				}
+				else if (mask == Mask.Circle)
+				{
+					throw new NotImplementedException("circle-shaped mask for FastBitmapArray is not implemented");
 				}
 
-				anythingChanged = false;
 				xMinChanged = width - 1;
 				xMaxChanged = 0;
 				yMinChanged = height - 1;
 				yMaxChanged = 0;
-				for (int x = 0; x < width; x++)
-				{
-					for (int y = 0; y < height; y++)
-					{
-						changed[x][y] = false;
-					}
-				}
-
+				anythingChanged = false;
 			}
 		}
 

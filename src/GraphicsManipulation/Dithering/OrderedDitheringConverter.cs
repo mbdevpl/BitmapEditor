@@ -19,7 +19,7 @@ namespace GraphicsManipulation.Dithering
 		static OrderedDitheringConverter()
 		{
 			Matrices = new Dictionary<int, int[][]>();
-			MatrixSizeIsAccepted = new bool[MaxMatrixSize+1];
+			MatrixSizeIsAccepted = new bool[MaxMatrixSize + 1];
 
 			MatrixSizeIsAccepted[0] = false;
 			MatrixSizeIsAccepted[1] = false;
@@ -124,14 +124,18 @@ namespace GraphicsManipulation.Dithering
 		private double processOnePixel(double color, double[] levels, double[] levelsBounds,
 			int levelsCountLess, double currentDitherValue)
 		{
+			if (color < 0.7 && color > 0.6)
+				color = color + 1 - 1;
+
 			int colorLevel = levelsCountLess;
 			for (int i = 1; i < levelsCountLess; ++i)
-				if (color < levelsBounds[i])
+				if (color < levels/*Bounds*/[i])
 				{
 					//colorApprox = levels[i];
 					colorLevel = i;
 					break;
 				}
+
 			if (color < levels[colorLevel] - currentDitherValue)
 				--colorLevel;
 
@@ -186,6 +190,10 @@ namespace GraphicsManipulation.Dithering
 
 			int levelsCountLess = levelsCount - 1;
 
+			var matrix = Matrices[matrixSize];
+			var matrixCoef = matrixSize * matrixSize + 1;
+			double matrixLevel = 1.0 / levelsCountLess;
+
 			double[] levels = new double[levelsCount];
 			// upper bounds for all levels (except for the last level, cos this one is always 1.0)
 			double[] levelsBounds = new double[levelsCountLess];
@@ -194,11 +202,9 @@ namespace GraphicsManipulation.Dithering
 				levels[i] = ((double)i) / levelsCountLess;
 				if (i > 0)
 					levelsBounds[i - 1] = (levels[i - 1] + levels[i]) / 2;
+				if (i > 0 && i < levelsCount - 1)
+					levels[i] += 0.5 / (levelsCountLess * (matrixCoef - 1) + 1);
 			}
-
-			var matrix = Matrices[matrixSize];
-			var matrixCoef = matrixSize * matrixSize + 1;
-			double matrixLevel = ((double)1) / levelsCountLess; //levels[1] / matrixCoef;
 
 			int matrixX = 0;
 			int matrixY = 0;

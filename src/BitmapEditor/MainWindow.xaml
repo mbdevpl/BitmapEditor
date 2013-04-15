@@ -40,6 +40,8 @@
 			<MenuItem Header="Load image" Name="OptionLoad" Click="OptionLoad_Click" />
 			<MenuItem Header="Reload from disk" Name="OptionReload" Click="OptionReload_Click"
 					IsEnabled="False" />
+			<MenuItem Header="Generate palette" Name="OptionGeneratePalette" Click="OptionGeneratePalette_Click" />
+			<MenuItem Header="Load test image" Name="OptionLoadTest" Click="OptionLoadTest_Click" />
 			<MenuItem Header="Exit" Name="OptionExit" Click="OptionExit_Click" />
 		</Menu>
 		<Grid Grid.Row="1">
@@ -179,17 +181,19 @@
 					<RowDefinition />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<ScrollViewer
+				<ScrollViewer Name="DrawingScrollView"
+						HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
 						HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
 					<Canvas Name="DrawingArea" 
 						Focusable="True"
 						MouseLeftButtonDown="DrawingArea_MouseLeftButtonDown"
 						MouseLeftButtonUp="DrawingArea_MouseLeftButtonUp"
 						MouseMove="DrawingArea_MouseMove"
+						HorizontalAlignment="Left" VerticalAlignment="Top"
 						Height="{Binding ElementName=DrawingImage, Path=ActualHeight, Mode=OneWay}"
 						Width="{Binding ElementName=DrawingImage, Path=ActualWidth, Mode=OneWay}">
-						<Image Name="DrawingImage" Source="Honda.jpg" />
-						<!-- HorizontalAlignment="Left" VerticalAlignment="Top" -->
+						<Image Name="DrawingImage" Source="Honda.jpg"
+							HorizontalAlignment="Left" VerticalAlignment="Top" />
 						<Rectangle Name="DrawingBrush" Stroke="White" Visibility="Hidden"
 							Width="{Binding SizeOfBrush}" Height="{Binding SizeOfBrush}" />
 					</Canvas>
