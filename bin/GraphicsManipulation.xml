@@ -43,6 +43,14 @@
             <param name="width"></param>
             <param name="height"></param>
         </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.IsInBounds(System.Int32,System.Int32)">
+            <summary>
+            Checks if given point lays on this bitmap array.
+            </summary>
+            <param name="x">horizontal coordinate</param>
+            <param name="y">vertical coordinate</param>
+            <returns>true if given coordinates denote a point inside this bitmap</returns>
+        </member>
         <member name="P:GraphicsManipulation.FastBitmapArray.Width">
             <summary>
             Width of the bitmap array in pixels.

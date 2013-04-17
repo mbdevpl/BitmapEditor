@@ -44,13 +44,52 @@ namespace GraphicsManipulation
 		}
 		private double[][] R;
 
-		//public double[][] Green { get { return G; } }
+		public ReadOnlyCollection<ReadOnlyCollection<double>> Green
+		{
+			get
+			{
+				if (G == null)
+					return null;
+				ReadOnlyCollection<double>[] result = new ReadOnlyCollection<double>[width];
+				for (int x = 0; x < width; x++)
+				{
+					result[x] = new ReadOnlyCollection<double>(G[x]);
+				}
+				return new ReadOnlyCollection<ReadOnlyCollection<double>>(result);
+			}
+		}
 		private double[][] G;
 
-		//public double[][] Blue { get { return B; } }
+		public ReadOnlyCollection<ReadOnlyCollection<double>> Blue
+		{
+			get
+			{
+				if (B == null)
+					return null;
+				ReadOnlyCollection<double>[] result = new ReadOnlyCollection<double>[width];
+				for (int x = 0; x < width; x++)
+				{
+					result[x] = new ReadOnlyCollection<double>(B[x]);
+				}
+				return new ReadOnlyCollection<ReadOnlyCollection<double>>(result);
+			}
+		}
 		private double[][] B;
 
-		//public double[][] Alpha { get { return A; } }
+		public ReadOnlyCollection<ReadOnlyCollection<double>> Alpha
+		{
+			get
+			{
+				if (A == null)
+					return null;
+				ReadOnlyCollection<double>[] result = new ReadOnlyCollection<double>[width];
+				for (int x = 0; x < width; x++)
+				{
+					result[x] = new ReadOnlyCollection<double>(A[x]);
+				}
+				return new ReadOnlyCollection<ReadOnlyCollection<double>>(result);
+			}
+		}
 		private double[][] A;
 
 		private WriteableBitmap bitmap;
@@ -160,6 +199,55 @@ namespace GraphicsManipulation
 			WriteToChannels(0, 0, width, height);
 		}
 
+		public FastBitmapArray(FastBitmapArray source)
+			: this(source.width, source.height)
+		{
+			CopyAreaBatch(source);
+		}
+
+		#region area copy
+
+		public void CopyAreaBatch(FastBitmapArray source)
+		{
+			CopyAreaBatch(source, 0, 0, width - 1, height - 1);
+		}
+
+		public void CopyArea(FastBitmapArray source)
+		{
+			CopyArea(source, 0, 0, width - 1, height - 1);
+		}
+
+		public void CopyAreaBatch(FastBitmapArray source, int minX, int minY, int maxX, int maxY)
+		{
+			if (minX < 0)
+				minX = 0;
+			if (minY < 0)
+				minY = 0;
+			if (maxX >= width)
+				maxX = width - 1;
+			if (maxY >= height)
+				maxY = height - 1;
+
+			for (int x = minX; x <= maxX; x++)
+			{
+				for (int y = minY; y <= maxY; y++)
+				{
+					R[x][y] = source.R[x][y];
+					G[x][y] = source.G[x][y];
+					B[x][y] = source.B[x][y];
+					A[x][y] = source.A[x][y];
+				}
+			}
+		}
+
+		public void CopyArea(FastBitmapArray source, int minX, int minY, int maxX, int maxY)
+		{
+			CopyAreaBatch(source, minX, minY, maxX, maxY);
+			SetBatchArea(minX, minY, maxX, maxY);
+		}
+
+		#endregion
+
 		#region pixel setters/getters
 
 		public void SetPixel(int x, int y, double? red, double? green, double? blue,
@@ -205,6 +293,24 @@ namespace GraphicsManipulation
 			return A[x][y];
 		}
 
+		private void Change(int x, int y)
+		{
+			if (x > xMaxChanged)
+				xMaxChanged = x;
+			if (x < xMinChanged)
+				xMinChanged = x;
+			if (y > yMaxChanged)
+				yMaxChanged = y;
+			if (y < yMinChanged)
+				yMinChanged = y;
+			changed[x][y] = true;
+
+			if (anythingChanged)
+				return;
+
+			anythingChanged = true;
+		}
+
 		public void SetRed(int x, int y, double value)
 		{
 			Change(x, y);
@@ -240,6 +346,15 @@ namespace GraphicsManipulation
 
 		public void SetBatchArea(int minX, int minY, int maxX, int maxY)
 		{
+			if (minX < 0)
+				minX = 0;
+			if (minY < 0)
+				minY = 0;
+			if (maxX >= width)
+				maxX = width - 1;
+			if (maxY >= height)
+				maxY = height - 1;
+
 			if (maxX > xMaxChanged)
 				xMaxChanged = maxX;
 			if (minX < xMinChanged)
@@ -261,25 +376,21 @@ namespace GraphicsManipulation
 
 		public void SetRedBatch(int x, int y, double value)
 		{
-			//Change(x, y);
 			R[x][y] = value;
 		}
 
 		public void SetGreenBatch(int x, int y, double value)
 		{
-			//Change(x, y);
 			G[x][y] = value;
 		}
 
 		public void SetBlueBatch(int x, int y, double value)
 		{
-			//Change(x, y);
 			B[x][y] = value;
 		}
 
 		public void SetAlphaBatch(int x, int y, double value)
 		{
-			//Change(x, y);
 			A[x][y] = value;
 		}
 
@@ -294,22 +405,15 @@ namespace GraphicsManipulation
 
 		#endregion
 
-		private void Change(int x, int y)
+		/// <summary>
+		/// Checks if given point lays on this bitmap array.
+		/// </summary>
+		/// <param name="x">horizontal coordinate</param>
+		/// <param name="y">vertical coordinate</param>
+		/// <returns>true if given coordinates denote a point inside this bitmap</returns>
+		public bool IsInBounds(int x, int y)
 		{
-			if (x > xMaxChanged)
-				xMaxChanged = x;
-			if (x < xMinChanged)
-				xMinChanged = x;
-			if (y > yMaxChanged)
-				yMaxChanged = y;
-			if (y < yMinChanged)
-				yMinChanged = y;
-			changed[x][y] = true;
-
-			if (anythingChanged)
-				return;
-
-			anythingChanged = true;
+			return x >= 0 && x < width && y >= 0 && y < height;
 		}
 
 		public void DrawLine(int xStart, int yStart, int xEnd, int yEnd,
@@ -348,7 +452,7 @@ namespace GraphicsManipulation
 					else
 						++yThickness;
 				}
-				
+
 				int xOffset = xThickness / 2;
 				int yOffset = yThickness / 2;
 
@@ -366,6 +470,7 @@ namespace GraphicsManipulation
 					return;
 				}
 
+				// TODO: thickness handling below is not optimal
 				for (int i = 0; i < yThickness; ++i)
 					DrawLine(xStart, yStart + i, xEnd, yEnd + i, red, green, blue, 1);
 
@@ -378,6 +483,7 @@ namespace GraphicsManipulation
 
 				return;
 			}
+
 			bool invertX = false;
 			if (primaryX && xStart > xEnd)
 				invertX = true;
@@ -422,8 +528,11 @@ namespace GraphicsManipulation
 			int y = primaryX ? yStart : xStart;
 
 			if (primaryX)
-				SetPixelBatch(x, y, red, green, blue);
-			else
+			{
+				if (IsInBounds(x, y))
+					SetPixelBatch(x, y, red, green, blue);
+			}
+			else if (IsInBounds(y, x))
 				SetPixelBatch(y, x, red, green, blue);
 
 			if (!primaryX)
@@ -443,10 +552,19 @@ namespace GraphicsManipulation
 				++x;
 
 				if (primaryX)
-					SetPixelBatch(x, y, red, green, blue);
-				else
+				{
+					if (IsInBounds(x, y))
+						SetPixelBatch(x, y, red, green, blue);
+				}
+				else if (IsInBounds(y, x))
 					SetPixelBatch(y, x, red, green, blue);
+
 			}
+		}
+
+		public void DrawLine(Line line)
+		{
+			DrawLine(line.StartX, line.StartY, line.EndX, line.EndY, line.Red, line.Green, line.Blue, line.Thickness);
 		}
 
 		public void RefreshBitmap(Mask mask = Mask.Rectangle)
@@ -538,11 +656,6 @@ namespace GraphicsManipulation
 				anythingChanged = false;
 			}
 		}
-
-		//private void WriteToPixelBytes()
-		//{
-		//	WriteToPixelBytes(0, 0, width, height);
-		//}
 
 		private void WriteToChannels(int xMin, int yMin, int xMax, int yMax)
 		{

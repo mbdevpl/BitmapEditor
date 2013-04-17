@@ -14,6 +14,7 @@ using GraphicsManipulation.Filters;
 using System.Text;
 using GraphicsManipulation.Dithering;
 using System.Windows.Data;
+using System.Collections.ObjectModel;
 
 namespace BitmapEditor
 {
@@ -33,7 +34,11 @@ namespace BitmapEditor
 
 		private FastBitmapArray bitmapArray = null;
 
-		private bool isGlobalMain;
+		private FastBitmapArray bitmapArrayTemp = null;
+
+		private FastBitmapArray bitmapArrayWithoutLines = null;
+
+		//private bool isGlobalMain = true;
 
 		private bool keyIsDown = false;
 
@@ -56,14 +61,77 @@ namespace BitmapEditor
 		private Dictionary<ErrorDiffusionKernelName, Button> dictionaryErrorDiffusionKernelNameToButton = null;
 
 		private Point currentLineStart;
+		private Point currentLineEnd;
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private string latestFileName = null;
 		private List<Point> latestCustomFilter = null;
 
-		private FilterTypes previousFilter = initialFilter;
-		private FilterTypes filter = initialFilter;
+		private Tools tool;
+		public Tools Tool
+		{
+			get { return tool; }
+			set
+			{
+				if (tool == value)
+					return;
+				tool = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("Tool"));
+			}
+		}
+
+		//private string toolName = "";
+		//public string ToolName
+		//{
+		//	get { return toolName; }
+		//	set
+		//	{
+		//		if (toolName == value)
+		//			return;
+		//		toolName = value;
+
+		//		if (PropertyChanged != null)
+		//			PropertyChanged(this, new PropertyChangedEventArgs("ToolName"));
+		//	}
+		//}
+
+		#region Filtering
+
+		private BrushShapes shape;
+		public BrushShapes Shape
+		{
+			get { return shape; }
+			set
+			{
+				if (shape == value)
+					return;
+				shape = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("Shape"));
+			}
+		}
+
+		private decimal sizeOfBrush;
+		public decimal SizeOfBrush
+		{
+			get { return sizeOfBrush; }
+			set
+			{
+				if (sizeOfBrush == value)
+					return;
+				sizeOfBrush = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("SizeOfBrush"));
+			}
+		}
+
+		private FilterTypes previousFilter;
+		private FilterTypes filter;
 		public FilterTypes Filter
 		{
 			get { return filter; }
@@ -79,37 +147,11 @@ namespace BitmapEditor
 			}
 		}
 
-		private BrushShapes shape = initialShape;
-		public BrushShapes Shape
-		{
-			get { return shape; }
-			set
-			{
-				if (shape == value)
-					return;
-				shape = value;
+		#endregion
 
-				if (PropertyChanged != null)
-					PropertyChanged(this, new PropertyChangedEventArgs("Shape"));
-			}
-		}
+		#region Dithering
 
-		private decimal sizeOfBrush = 10;
-		public decimal SizeOfBrush
-		{
-			get { return sizeOfBrush; }
-			set
-			{
-				if (sizeOfBrush == value)
-					return;
-				sizeOfBrush = value;
-
-				if (PropertyChanged != null)
-					PropertyChanged(this, new PropertyChangedEventArgs("SizeOfBrush"));
-			}
-		}
-
-		private decimal errorDiffusionColorLevels = 2;
+		private decimal errorDiffusionColorLevels;
 		public decimal ErrorDiffusionColorLevels
 		{
 			get { return errorDiffusionColorLevels; }
@@ -124,7 +166,7 @@ namespace BitmapEditor
 			}
 		}
 
-		private decimal sizeOfOrderedDitheringArray = 2;
+		private decimal sizeOfOrderedDitheringArray;
 		public decimal SizeOfOrderedDitheringArray
 		{
 			get { return sizeOfOrderedDitheringArray; }
@@ -134,7 +176,7 @@ namespace BitmapEditor
 					return;
 				sizeOfOrderedDitheringArray = value;
 
-				if (isGlobalMain && OrderedDithering != null)
+				if (/*isGlobalMain && */OrderedDithering != null)
 				{
 					if (OrderedDitheringConverter.MatrixSizeIsAccepted[(int)sizeOfOrderedDitheringArray])
 					{
@@ -154,7 +196,7 @@ namespace BitmapEditor
 			}
 		}
 
-		private decimal maxSizeOfOrderedDitheringArray = OrderedDitheringConverter.MaxMatrixSize;
+		private decimal maxSizeOfOrderedDitheringArray;
 		public decimal MaxSizeOfOrderedDitheringArray
 		{
 			get { return maxSizeOfOrderedDitheringArray; }
@@ -169,7 +211,7 @@ namespace BitmapEditor
 			}
 		}
 
-		private decimal orderedDitheringColorLevels = 2;
+		private decimal orderedDitheringColorLevels;
 		public decimal OrderedDitheringColorLevels
 		{
 			get { return orderedDitheringColorLevels; }
@@ -184,37 +226,11 @@ namespace BitmapEditor
 			}
 		}
 
-		private string toolKindName = "";
-		public string ToolKindName
-		{
-			get { return toolKindName; }
-			set
-			{
-				if (toolKindName == value)
-					return;
-				toolKindName = value;
+		#endregion
 
-				if (PropertyChanged != null)
-					PropertyChanged(this, new PropertyChangedEventArgs("ToolKindName"));
-			}
-		}
+		#region Line
 
-		private string toolName = "";
-		public string ToolName
-		{
-			get { return toolName; }
-			set
-			{
-				if (toolName == value)
-					return;
-				toolName = value;
-
-				if (PropertyChanged != null)
-					PropertyChanged(this, new PropertyChangedEventArgs("ToolName"));
-			}
-		}
-
-		private decimal lineThickness = 1;
+		private decimal lineThickness;
 		public decimal LineThickness
 		{
 			get { return lineThickness; }
@@ -229,51 +245,148 @@ namespace BitmapEditor
 			}
 		}
 
-		private string status = "";
-		public string Status
+		private Color lineColor;
+		public Color LineColor
 		{
-			get { return status; }
+			get { return lineColor; }
 			set
 			{
-				if (status == value)
+				if (lineColor == value)
 					return;
-				status = value;
+				lineColor = value;
 
 				if (PropertyChanged != null)
-					PropertyChanged(this, new PropertyChangedEventArgs("Status"));
+					PropertyChanged(this, new PropertyChangedEventArgs("LineColor"));
 			}
 		}
 
-		public MainWindow() : this(null) { }
-
-		public MainWindow(string initialImagePath, int levels = 0, bool monochrome = false)
+		private ObservableCollection<Line> lines;
+		public ObservableCollection<Line> Lines
 		{
+			get { return lines; }
+			set
+			{
+				if (lines == value)
+					return;
+				lines = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("Lines"));
+			}
+		}
+
+		public decimal MaxPointX
+		{
+			get { return bitmapArray.Width - 1; }
+		}
+
+		public decimal MaxPointY
+		{
+			get { return bitmapArray.Height - 1; }
+		}
+
+		private decimal startPointX;
+		public decimal StartPointX
+		{
+			get { return startPointX; }
+			set
+			{
+				if (startPointX == value)
+					return;
+				startPointX = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("StartPointX"));
+			}
+		}
+
+		private decimal startPointY;
+		public decimal StartPointY
+		{
+			get { return startPointY; }
+			set
+			{
+				if (startPointY == value)
+					return;
+				startPointY = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("StartPointY"));
+			}
+		}
+
+		private decimal endPointX;
+		public decimal EndPointX
+		{
+			get { return endPointX; }
+			set
+			{
+				if (endPointX == value)
+					return;
+				endPointX = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("EndPointX"));
+			}
+		}
+
+		private decimal endPointY;
+		public decimal EndPointY
+		{
+			get { return endPointY; }
+			set
+			{
+				if (endPointY == value)
+					return;
+				endPointY = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("EndPointY"));
+			}
+		}
+
+		#endregion
+
+		//private string status = "";
+		//public string Status
+		//{
+		//	get { return status; }
+		//	set
+		//	{
+		//		if (status == value)
+		//			return;
+		//		status = value;
+
+		//		if (PropertyChanged != null)
+		//			PropertyChanged(this, new PropertyChangedEventArgs("Status"));
+		//	}
+		//}
+
+		public MainWindow()
+		{
+			// for bindings
 			this.DataContext = this;
 
+			Tool = Tools.Filtering;
+
+			Shape = initialShape;
 			SizeOfBrush = 25;
+			Filter = initialFilter;
+
 			ErrorDiffusionColorLevels = 2;
 			SizeOfOrderedDitheringArray = 3;
+			MaxSizeOfOrderedDitheringArray = OrderedDitheringConverter.MaxMatrixSize;
 			OrderedDitheringColorLevels = 2;
-			Status = "ready";
-			Filter = initialFilter;
-			Shape = initialShape;
 
-			isGlobalMain = false;
+			LineThickness = 1;
+			LineColor = Colors.White;
+			Lines = new ObservableCollection<Line>();
+
+			//Status = "ready";
 
 			InitializeComponent();
 
 			InitializeDictionaries();
-
-			if (initialImagePath == null)
-			{
-				isGlobalMain = true;
-				//LoadFromDisk("honda.jpg");
-			}
-			else
-			{
-				isGlobalMain = false;
-				LoadFromDisk(initialImagePath);
-			}
 
 			FilterType_Checked(dictionaryFilterTypeToRadioButton[filter], null);
 			BrushShape_Checked(dictionaryBrushShapeToRadioButton[shape], null);
@@ -283,27 +396,28 @@ namespace BitmapEditor
 
 			OptionLoadTest.IsEnabled = false;
 			OptionLoadTest.Visibility = Visibility.Collapsed;
+		}
 
-			if (!isGlobalMain)
+		public MainWindow(string initialImagePath, PaletteViewer paletteViewer)
+			: this()
+		{
+			//isGlobalMain = false;
+
+			if (initialImagePath != null)
 			{
-				OptionLoad.IsEnabled = false;
-				OptionReload.IsEnabled = false;
-				ErrorDiffusionGroup.IsEnabled = false;
-				OrderedDitheringGroup.IsEnabled = false;
-				OptionGeneratePalette.IsEnabled = false;
+				//throw new ArgumentNullException("image path cannot be null");
+				// it can be null
 
-				OptionLoad.Visibility = Visibility.Collapsed;
-				OptionReload.Visibility = Visibility.Collapsed;
-				ErrorDiffusionGroup.Visibility = Visibility.Collapsed;
-				OrderedDitheringGroup.Visibility = Visibility.Collapsed;
-				OptionGeneratePalette.Visibility = Visibility.Collapsed;
+				if (initialImagePath.Length == 0)
+					throw new ArgumentException("image path cannot be empty if it is not null");
 
-				if (levels > 1)
-				{
-					var pv = new PaletteViewer(levels, monochrome);
-					Grid.SetRow(pv, 1);
-					CanvasGrid.Children.Add(pv);
-				}
+				LoadFromDisk(initialImagePath);
+			}
+
+			if (paletteViewer != null)
+			{
+				Grid.SetRow(paletteViewer, 1);
+				CanvasGrid.Children.Add(paletteViewer);
 			}
 		}
 
@@ -349,6 +463,12 @@ namespace BitmapEditor
 				dictionaryButtonToErrorDiffusionKernelName.Add(pair.Value, pair.Key);
 		}
 
+		private void SendPropertyChanged(string propertyName)
+		{
+			if (PropertyChanged != null)
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+
 		private void ReinitializeBitmapArray(BitmapSource source)
 		{
 			SetBitmapArray(new FastBitmapArray(source));
@@ -361,6 +481,9 @@ namespace BitmapEditor
 			DrawingImage.Width = bitmapArray.Width;
 			DrawingImage.Height = bitmapArray.Height;
 			ReinitializeMask();
+
+			SendPropertyChanged("MaxPointX");
+			SendPropertyChanged("MaxPointY");
 		}
 
 		private void ReinitializeMask()
@@ -413,7 +536,9 @@ namespace BitmapEditor
 
 		public MainWindow Clone(int levels = 0, bool monochrome = false)
 		{
-			MainWindow w = new MainWindow(latestFileName == null ? "" : latestFileName, levels, monochrome);
+			var pv = new PaletteViewer(levels, monochrome);
+
+			MainWindow w = new MainWindow(latestFileName, pv);
 
 			w.Width = this.ActualWidth;
 			w.Height = this.ActualHeight;
@@ -469,6 +594,11 @@ namespace BitmapEditor
 
 			if (dlg.ShowDialog() == true)
 				LoadFromDisk(dlg.FileName);
+		}
+
+		private void OptionReload_Click(object sender, RoutedEventArgs e)
+		{
+			LoadFromDisk(latestFileName);
 		}
 
 		private void OptionLoadTest_Click(object sender, RoutedEventArgs e)
@@ -596,13 +726,32 @@ namespace BitmapEditor
 			DrawingImage.Height = bitmapArray.Height;
 			ReinitializeMask();
 
-			if (OptionReload.IsEnabled == true)
+			if (latestFileName != null)
+			{
+				latestFileName = null;
+
 				OptionReload.IsEnabled = false;
+			}
 		}
 
-		private void OptionReload_Click(object sender, RoutedEventArgs e)
+		private void OptionAdjustWindowSize_Click(object sender, RoutedEventArgs e)
 		{
-			LoadFromDisk(latestFileName);
+			double widthChange = DrawingScrollView.ScrollableWidth;
+			double heightChange = DrawingScrollView.ScrollableHeight;
+
+			if (widthChange == 0)
+				widthChange = DrawingArea.Width - DrawingScrollView.ViewportWidth;
+			if (heightChange == 0)
+				heightChange = DrawingArea.Height - DrawingScrollView.ViewportHeight;
+
+			if (widthChange != 0)
+				widthChange++;
+
+			if (Math.Abs(widthChange) < 0.5 && Math.Abs(heightChange) < 0.5)
+				return;
+
+			Width += widthChange;
+			Height += heightChange;
 		}
 
 		private void OptionExit_Click(object sender, RoutedEventArgs e)
@@ -612,7 +761,238 @@ namespace BitmapEditor
 
 		#endregion
 
-		#region filters menu handlers
+		#region canvas handlers
+
+		private void DrawingArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			if (sender == null || !(sender is Canvas))
+				throw new ArgumentException("expected only Canvas", "sender");
+
+			var canvas = (Canvas)sender;
+			if (!canvas.CaptureMouse())
+				throw new InvalidOperationException("cannot draw if mouse cannot captured");
+
+			switch (tool)
+			{
+				case Tools.Filtering:
+					{
+						//Status = "painting";
+						bitmapArrayWithoutLines = null;
+						Lines.Clear();
+					} break;
+				case Tools.Line:
+					{
+						//Status = "adding line";
+
+						currentLineStart = new Point(e.GetPosition(canvas).X, e.GetPosition(canvas).Y);
+
+						if (bitmapArrayTemp == null)
+						{
+							currentLineEnd = currentLineStart;
+							bitmapArrayTemp = new FastBitmapArray(bitmapArray);
+						}
+					} break;
+				default:
+					return;
+			}
+
+			keyIsDown = true;
+
+			DrawingArea_MouseDownOrMove(sender, e);
+		}
+
+		private void DrawingArea_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (keyIsDown && e.LeftButton == MouseButtonState.Released)
+			{
+				//Status = "ready";
+				keyIsDown = false;
+				ReinitializeMask();
+				return;
+			}
+
+			if (!keyIsDown)
+				return;
+
+			if (sender == null || !(sender is Canvas))
+				throw new ArgumentException("expected only Canvas", "sender");
+
+			switch (tool)
+			{
+				case Tools.Filtering:
+					{
+						//Status = "painting";
+						if (Shape == BrushShapes.Fill)
+							return;
+					} break;
+				case Tools.Line:
+					{
+						//Status = "adding line";
+					} break;
+				default: return;
+			}
+
+			DrawingArea_MouseDownOrMove(sender, e);
+		}
+
+		private void DrawingArea_MouseDownOrMove(object sender, MouseEventArgs e)
+		{
+			if (sender == null || !(sender is Canvas))
+				throw new ArgumentException("expected only Canvas", "sender");
+
+			var canvas = (Canvas)sender;
+			double x = e.GetPosition(canvas).X;
+			double y = e.GetPosition(canvas).Y;
+
+			if (!bitmapArray.IsInBounds((int)x, (int)y))
+				return;
+
+			switch (tool)
+			{
+				case Tools.Filtering:
+					{
+						// brush border
+						if (Shape != BrushShapes.Fill)
+						{
+							if (DrawingBrush.Visibility != Visibility.Visible)
+								DrawingBrush.Visibility = Visibility.Visible;
+							double half = ((double)sizeOfBrush) / 2;
+							DrawingBrush.Margin = new Thickness(x - half, y - half, 0, 0);
+						}
+
+						//System.Text.StringBuilder s = new System.Text.StringBuilder();
+						//s.Append("left click at: ").Append(new Point(x, y));
+						//s.Append(' ').Append(Filter).Append(' ').Append(Shape);
+						//s.Append(' ').Append((int)BrushSize.Value);
+						//MessageBox.Show(s.ToString(), sender.GetType().ToString());
+
+						// get filter instance using reflection
+						var typeName = new StringBuilder("GraphicsManipulation.Filters.").Append(Filter).Append("Filter").ToString();
+						FilterBrush brush = (FilterBrush)filtersAssembly.CreateInstance(typeName);
+
+						if (brush is CustomFilter)
+							((CustomFilter)brush).FilterFunction = latestCustomFilter;
+
+						brush.ApplyAt(bitmapArray, Shape, new Point(x, y), (int)SizeOfBrush, mask);
+
+						if (Shape == BrushShapes.Fill)
+							bitmapArray.RefreshBitmap(Mask.Disabled);
+						else
+							bitmapArray.RefreshBitmap(Mask.Rectangle);
+					} break;
+				case Tools.Line:
+					{
+						int startX = (int)currentLineStart.X;
+						int startY = (int)currentLineStart.Y;
+						int endX = (int)x;
+						int endY = (int)y;
+
+						if (currentLineStart != currentLineEnd)
+						{
+							int minX = (int)Math.Min(currentLineStart.X, currentLineEnd.X);
+							int maxX = (int)Math.Max(currentLineStart.X, currentLineEnd.X);
+							int minY = (int)Math.Min(currentLineStart.Y, currentLineEnd.Y);
+							int maxY = (int)Math.Max(currentLineStart.Y, currentLineEnd.Y);
+							bitmapArray.CopyArea(bitmapArrayTemp, minX, minY, maxX, maxY);
+						}
+						currentLineEnd = new Point(x, y);
+
+						bitmapArray.DrawLine(startX, startY, endX, endY,
+							lineColor.ScR, lineColor.ScG, lineColor.ScB);
+						bitmapArray.RefreshBitmap(Mask.Rectangle);
+					} break;
+			}
+		}
+
+		private void DrawingArea_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			if (sender == null || !(sender is Canvas))
+				throw new ArgumentException("expected only Canvas", "sender");
+
+			//Status = "ready";
+
+			var canvas = (Canvas)sender;
+
+			if (!keyIsDown)
+				return;
+
+			switch (tool)
+			{
+				case Tools.Filtering:
+					{
+						ReinitializeMask();
+						DrawingBrush.Visibility = Visibility.Hidden;
+					} break;
+				case Tools.Line:
+					{
+						double x = e.GetPosition(canvas).X;
+						double y = e.GetPosition(canvas).Y;
+
+						int startX = (int)currentLineStart.X;
+						int startY = (int)currentLineStart.Y;
+						int endX = (int)x;
+						int endY = (int)y;
+
+						bitmapArray.CopyArea(bitmapArrayTemp);
+						if (bitmapArrayWithoutLines == null)
+							bitmapArrayWithoutLines = new FastBitmapArray(bitmapArray);
+						bitmapArray.DrawLine(startX, startY, endX, endY,
+							lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness);
+						bitmapArray.RefreshBitmap(Mask.Disabled);
+						bitmapArrayTemp = null;
+
+						Lines.Add(new Line(startX, startY, endX, endY, lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness));
+
+						//LineAdd.IsEnabled = true;
+						//LineUpdate.IsEnabled = true;
+
+					} break;
+			}
+
+			if (canvas.IsMouseCaptured)
+				canvas.ReleaseMouseCapture();
+
+			if (keyIsDown)
+				keyIsDown = false;
+		}
+
+		#endregion
+
+		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.Source is TabControl == false)
+				return;
+
+			var control = ((TabControl)e.Source);
+			//var tabs = control.Items;
+			var selected = control.SelectedIndex;
+
+			if (selected == 0)
+			{
+				Tool = Tools.Filtering;
+				//ToolName = Filter.ToString();
+				//Binding b = new Binding();
+				//b.Source = this;
+				//b.Path = new PropertyPath("Filter");
+				//b.Mode = BindingMode.OneWay;
+				//b.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+				//BindingOperations.SetBinding(ToolInfo, TextBlock.TextProperty, b);
+			}
+			//else
+			//BindingOperations.ClearBinding(ToolInfo, TextBlock.TextProperty);
+			else if (selected == 1)
+			{
+				Tool = Tools.Dithering;
+				//ToolName = String.Empty;
+			}
+			else if (selected == 2)
+			{
+				Tool = Tools.Line;
+				//ToolName = String.Empty;
+			}
+		}
+
+		#region filters tab handlers
 
 		private void FilterType_Checked(object sender, RoutedEventArgs e)
 		{
@@ -651,167 +1031,10 @@ namespace BitmapEditor
 
 		#endregion
 
-		//private void DrawingArea_DragOver(object sender, DragEventArgs e)
-		//{
-		//	var obj = (IInputElement)sender;
-		//	MessageBox.Show("drag over" + e.GetPosition(obj).ToString(),
-		//		 sender.GetType().ToString());
-		//}
-
-		//private void DrawingArea_Drop(object sender, DragEventArgs e)
-		//{
-		//	var obj = (IInputElement)sender;
-		//	MessageBox.Show("drop " + e.GetPosition(obj).ToString(),
-		//		 sender.GetType().ToString());
-		//}
-
-		#region canvas handlers
-
-		private void DrawingArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-		{
-			if (toolKindName.Equals("Filter"))
-			{
-				keyIsDown = true;
-				Status = "painting";
-			}
-			else if (toolKindName.Equals("Line"))
-			{
-				keyIsDown = true;
-				Status = "adding line";
-
-				var canvas = (Canvas)sender;
-				currentLineStart = new Point(e.GetPosition(canvas).X, e.GetPosition(canvas).Y);
-
-			}
-
-			DrawingArea_MouseDownOrMove(sender, e);
-		}
-
-		private void DrawingArea_MouseMove(object sender, MouseEventArgs e)
-		{
-			MouseButtonState btn = e.LeftButton;
-
-			if (btn == MouseButtonState.Released)
-			{
-				Status = "ready";
-				if (keyIsDown)
-				{
-					keyIsDown = false;
-					ReinitializeMask();
-				}
-				return;
-			}
-
-			if (!keyIsDown)
-			{
-				Status = "ready";
-				return;
-			}
-
-			if (toolKindName.Equals("Filter"))
-			{
-				Status = "painting";
-
-				if (Shape == BrushShapes.Fill)
-					return;
-			}
-			else if (toolKindName.Equals("Line"))
-			{
-				Status = "adding line";
-			}
-
-			DrawingArea_MouseDownOrMove(sender, e);
-		}
-
-		private void DrawingArea_MouseDownOrMove(object sender, MouseEventArgs e)
-		{
-			if (sender == null || !(sender is Canvas))
-				throw new ArgumentException("expected only Canvas", "sender");
-
-			var canvas = (Canvas)sender;
-			double x = e.GetPosition(canvas).X;
-			double y = e.GetPosition(canvas).Y;
-
-			if (x < 0 || y < 0 || x > bitmapArray.Width || y > bitmapArray.Height)
-				return;
-
-			if (toolKindName.Equals("Filter"))
-			{
-				// brush border
-				if (Shape != BrushShapes.Fill)
-				{
-					if (DrawingBrush.Visibility != Visibility.Visible)
-						DrawingBrush.Visibility = Visibility.Visible;
-					double half = ((double)sizeOfBrush) / 2;
-					DrawingBrush.Margin = new Thickness(x - half, y - half, 0, 0);
-				}
-
-				//System.Text.StringBuilder s = new System.Text.StringBuilder();
-				//s.Append("left click at: ").Append(new Point(x, y));
-				//s.Append(' ').Append(Filter).Append(' ').Append(Shape);
-				//s.Append(' ').Append((int)BrushSize.Value);
-				//MessageBox.Show(s.ToString(), sender.GetType().ToString());
-
-				// get filter instance using reflection
-				var typeName = new StringBuilder("GraphicsManipulation.Filters.").Append(Filter).Append("Filter").ToString();
-				FilterBrush brush = (FilterBrush)filtersAssembly.CreateInstance(typeName);
-
-				if (brush is CustomFilter)
-					((CustomFilter)brush).FilterFunction = latestCustomFilter;
-
-				brush.ApplyAt(bitmapArray, Shape, new Point(x, y), (int)SizeOfBrush, mask);
-
-				if (Shape == BrushShapes.Fill)
-					bitmapArray.RefreshBitmap(Mask.Disabled);
-				else
-					bitmapArray.RefreshBitmap(Mask.Rectangle);
-			}
-			else if (toolKindName.Equals("Line"))
-			{
-				//bitmapArray.DrawLine((int)currentLineStart.X, (int)currentLineStart.Y, (int)x, (int)y, 1, 1, 1);
-
-				//bitmapArray.RefreshBitmap(Mask.Rectangle);
-			}
-		}
-
-		private void DrawingArea_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-		{
-			Status = "ready";
-
-			if (toolKindName.Equals("Filter"))
-			{
-				if (keyIsDown)
-				{
-					keyIsDown = false;
-					ReinitializeMask();
-					DrawingBrush.Visibility = Visibility.Hidden;
-				}
-			}
-			else if (toolKindName.Equals("Line"))
-			{
-				if (!keyIsDown)
-					return;
-
-				var canvas = (Canvas)sender;
-				double x = e.GetPosition(canvas).X;
-				double y = e.GetPosition(canvas).Y;
-
-				bitmapArray.DrawLine((int)currentLineStart.X, (int)currentLineStart.Y, (int)x, (int)y, 1, 1, 1, (int)lineThickness);
-				bitmapArray.RefreshBitmap(Mask.Rectangle);
-
-				keyIsDown = false;
-			}
-		}
-
-		#endregion
-
-		#region dithering menu handlers
+		#region dithering tab handlers
 
 		private void ErrorDiffusion_Apply(object sender, RoutedEventArgs e)
 		{
-			if (!isGlobalMain)
-				return;
-
 			if (sender is Button == false)
 				return;
 			var obj = (Button)sender;
@@ -827,9 +1050,6 @@ namespace BitmapEditor
 
 		private void OrderedDithering_Apply(object sender, RoutedEventArgs e)
 		{
-			if (!isGlobalMain)
-				return;
-
 			var conv = new OrderedDitheringConverter();
 			var convertedArray = conv.Process(bitmapArray, (int)sizeOfOrderedDitheringArray, (int)orderedDitheringColorLevels);
 
@@ -840,40 +1060,102 @@ namespace BitmapEditor
 
 		#endregion
 
-		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		#region lines tab handlers
+
+		private void LineAdd_Click(object sender, RoutedEventArgs e)
 		{
-			if (e.Source is TabControl == false)
+			if (bitmapArrayWithoutLines == null)
+				bitmapArrayWithoutLines = new FastBitmapArray(bitmapArray);
+			var l = new Line((int)StartPointX, (int)StartPointY, (int)EndPointX, (int)EndPointY,
+				lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness);
+
+			Lines.Add(l);
+			bitmapArray.DrawLine(l);
+		}
+
+		private void LineUpdate_Click(object sender, RoutedEventArgs e)
+		{
+			var selected = LinesListView.SelectedIndex;
+			if (selected < 0)
 				return;
 
-			var control = ((TabControl)e.Source);
-			//var tabs = control.Items;
-			var selected = control.SelectedIndex;
+			Lines.RemoveAt(selected);
+			Lines.Insert(selected, new Line((int)StartPointX, (int)StartPointY, (int)EndPointX, (int)EndPointY,
+				lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness));
 
-			if (selected == 0)
-			{
-				ToolKindName = "Filter";
-				//ToolName = Filter.ToString();
-				Binding b = new Binding();
-				b.Source = this;
-				b.Path = new PropertyPath("Filter");
-				b.Mode = BindingMode.OneWay;
-				b.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-				BindingOperations.SetBinding(ToolInfo, TextBlock.TextProperty, b);
-			}
-			else
-				BindingOperations.ClearBinding(ToolInfo, TextBlock.TextProperty);
+			var l = lines[selected];
 
-			if (selected == 1)
+			//redraw lines
+			bitmapArray.CopyArea(bitmapArrayWithoutLines, Math.Min(l.StartX, l.EndX) - l.Thickness,
+				Math.Min(l.StartY, l.EndY) - l.Thickness, Math.Max(l.StartX, l.EndX) + l.Thickness,
+				Math.Max(l.StartY, l.EndY) + l.Thickness);
+			//bitmapArray.SetBatchArea(Math.Min(l.StartX, l.EndX), Math.Min(l.StartY, l.EndY),
+			//	Math.Max(l.StartX, l.EndX), Math.Max(l.StartY, l.EndY));
+			foreach (var line in lines)
 			{
-				ToolKindName = "Dithering";
-				ToolName = String.Empty;
+				bitmapArray.DrawLine(line.StartX, line.StartY, line.EndX, line.EndY,
+					line.Red, line.Green, line.Blue, line.Thickness);
 			}
-			else if (selected == 2)
-			{
-				ToolKindName = "Line";
-				ToolName = String.Empty;
-			}
+			bitmapArray.RefreshBitmap(Mask.Rectangle);
 		}
+
+		private void LineDelete_Click(object sender, RoutedEventArgs e)
+		{
+			var selected = LinesListView.SelectedIndex;
+			if (selected < 0)
+				return;
+
+			var l = lines[selected];
+			Lines.RemoveAt(selected);
+
+			if (Lines.Count > 0)
+				LinesListView.SelectedIndex = Math.Max(0, selected - 1);
+
+
+			// redraw lines
+			bitmapArray.CopyArea(bitmapArrayWithoutLines, Math.Min(l.StartX, l.EndX) - l.Thickness,
+				Math.Min(l.StartY, l.EndY) - l.Thickness, Math.Max(l.StartX, l.EndX) + l.Thickness, 
+				Math.Max(l.StartY, l.EndY) + l.Thickness);
+			//bitmapArray.SetBatchArea(Math.Min(l.StartX, l.EndX), Math.Min(l.StartY, l.EndY),
+			//	Math.Max(l.StartX, l.EndX), Math.Max(l.StartY, l.EndY));
+			foreach (var line in lines)
+			{
+				bitmapArray.DrawLine(line.StartX, line.StartY, line.EndX, line.EndY,
+					line.Red, line.Green, line.Blue, line.Thickness);
+			}
+			bitmapArray.RefreshBitmap(Mask.Rectangle);
+		}
+
+		private void LinesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			var selected = LinesListView.SelectedIndex;
+
+			if (selected < 0)
+			{
+				LineUpdate.IsEnabled = false;
+				LineDelete.IsEnabled = false;
+				return;
+			}
+
+			var line = Lines[selected];
+
+			StartPointX = line.StartX;
+			StartPointY = line.StartY;
+			EndPointX = line.EndX;
+			EndPointY = line.EndY;
+
+			lineColor.ScR = (float)line.Red;
+			lineColor.ScG = (float)line.Green;
+			lineColor.ScB = (float)line.Blue;
+			SendPropertyChanged("LineColor");
+
+			LineThickness = line.Thickness;
+
+			LineUpdate.IsEnabled = true;
+			LineDelete.IsEnabled = true;
+		}
+
+		#endregion
 
 	}
 }

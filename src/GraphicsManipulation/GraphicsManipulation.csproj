@@ -64,6 +64,7 @@
     <Compile Include="Filters\RandomFilter.cs" />
     <Compile Include="Filters\SepiaFilter.cs" />
     <Compile Include="Filters\SingleFilterBrush.cs" />
+    <Compile Include="Line.cs" />
     <Compile Include="Mask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

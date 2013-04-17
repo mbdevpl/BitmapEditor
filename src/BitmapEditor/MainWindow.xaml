@@ -40,74 +40,76 @@
 			<MenuItem Header="Load image" Name="OptionLoad" Click="OptionLoad_Click" />
 			<MenuItem Header="Reload from disk" Name="OptionReload" Click="OptionReload_Click"
 					IsEnabled="False" />
-			<MenuItem Header="Generate palette" Name="OptionGeneratePalette" Click="OptionGeneratePalette_Click" />
 			<MenuItem Header="Load test image" Name="OptionLoadTest" Click="OptionLoadTest_Click" />
+			<MenuItem Header="Generate palette" Name="OptionGeneratePalette" Click="OptionGeneratePalette_Click" />
+			<MenuItem Header="Adjust window size" Name="OptionAdjustWindowSize" Click="OptionAdjustWindowSize_Click" />
 			<MenuItem Header="Exit" Name="OptionExit" Click="OptionExit_Click" />
 		</Menu>
 		<Grid Grid.Row="1">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<StackPanel Grid.Column="0">
-				<StackPanel Orientation="Vertical">
-					<GroupBox Header="Brushes">
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition />
-								<ColumnDefinition />
-							</Grid.ColumnDefinitions>
-							<StackPanel Grid.Column="0" Orientation="Vertical">
-								<RadioButton Name="BrushSquare" Content="Square" 
-                              Checked="BrushShape_Checked" IsChecked="True" />
-								<RadioButton Name="BrushCircle" Content="Cirle" 
-                              Checked="BrushShape_Checked" />
-							</StackPanel>
-							<StackPanel Grid.Column="1" Orientation="Vertical">
-								<RadioButton Name="BrushFiller" Content="Filler" 
-                              Checked="BrushShape_Checked" />
-								<RadioButton Name="BrushPoint" Content="Point" 
-                              Checked="BrushShape_Checked" IsEnabled="False" />
-							</StackPanel>
-						</Grid>
-					</GroupBox>
-					<GroupBox Header="Brush size">
+			<StackPanel Grid.Column="1">
+				<TabControl Name="FeaturesTabControl" SelectionChanged="TabControl_SelectionChanged"
+								MinWidth="200" MaxWidth="250">
+					<TabItem Header="Filters">
 						<StackPanel Orientation="Vertical">
-							<ex:DecimalUpDown Name="BrushSize"
+							<GroupBox Header="Brushes">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition />
+										<!--<ColumnDefinition />-->
+									</Grid.ColumnDefinitions>
+									<StackPanel Grid.Column="0" Orientation="Vertical">
+										<RadioButton Name="BrushSquare" Content="Square" 
+                              Checked="BrushShape_Checked" IsChecked="True" />
+										<RadioButton Name="BrushCircle" Content="Cirle" 
+                              Checked="BrushShape_Checked" />
+										<RadioButton Name="BrushFiller" Content="Filler" 
+                              Checked="BrushShape_Checked" />
+										<RadioButton Name="BrushPoint" Content="Point" 
+                              Checked="BrushShape_Checked" IsEnabled="False" />
+									</StackPanel>
+									<!--<StackPanel Grid.Column="1" Orientation="Vertical">
+							</StackPanel>-->
+								</Grid>
+							</GroupBox>
+							<GroupBox Header="Brush size">
+								<StackPanel Orientation="Vertical">
+									<ex:DecimalUpDown Name="BrushSize"
 									Increment="5" Minimum="10" Maximum="100"
 									Value="{Binding SizeOfBrush}" />
-						</StackPanel>
-					</GroupBox>
-				</StackPanel>
-				<TabControl Name="FeaturesTabControl" SelectionChanged="TabControl_SelectionChanged">
-					<TabItem Header="Filters">
-						<GroupBox Header="Function filters">
-							<StackPanel Name="FilterTypePanel" Orientation="Vertical">
-								<RadioButton Name="FilterIdentity" Content="Identity"
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Header="Function filters">
+								<StackPanel Name="FilterTypePanel" Orientation="Vertical">
+									<RadioButton Name="FilterIdentity" Content="Identity"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterInverse" Content="Inverse" IsChecked="True"
+									<RadioButton Name="FilterInverse" Content="Inverse" IsChecked="True"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterRed" Content="Only red"
+									<RadioButton Name="FilterRed" Content="Only red"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterGreen" Content="Only green"
+									<RadioButton Name="FilterGreen" Content="Only green"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterBlue" Content="Only blue"
+									<RadioButton Name="FilterBlue" Content="Only blue"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterGrayscale" Content="Graysacle"
+									<RadioButton Name="FilterGrayscale" Content="Graysacle"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterSepia" Content="Sepia"
+									<RadioButton Name="FilterSepia" Content="Sepia"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterBrighten" Content="Brighten"
+									<RadioButton Name="FilterBrighten" Content="Brighten"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterDarken" Content="Darken"
+									<RadioButton Name="FilterDarken" Content="Darken"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterRandom" Content="Random"
+									<RadioButton Name="FilterRandom" Content="Random"
 									Checked="FilterType_Checked" />
-								<RadioButton Name="FilterCustomFunction" Content="Custom"
+									<RadioButton Name="FilterCustomFunction" Content="Custom"
 									Click="FilterType_Checked" />
-								<!--Checked="FilterType_Checked"-->
-							</StackPanel>
-						</GroupBox>
+									<!--Checked="FilterType_Checked"-->
+								</StackPanel>
+							</GroupBox>
+						</StackPanel>
 					</TabItem>
 					<TabItem Header="Dithering">
 						<StackPanel Orientation="Vertical" Margin="0,0,0,0">
@@ -176,15 +178,65 @@
 							</GroupBox>
 							<GroupBox Header="Line color">
 								<StackPanel>
-									<ex:ColorPicker DisplayColorAndName="True" SelectedColor="White" IsEnabled="False" />
-									<TextBox Text="#ffffff" FontFamily="Consolas" IsEnabled="False" />
+									<ex:ColorPicker DisplayColorAndName="True" SelectedColor="{Binding LineColor}" />
+									<TextBox Text="{Binding LineColor}" FontFamily="Consolas" IsEnabled="False" />
 								</StackPanel>
+							</GroupBox>
+							<GroupBox Header="Start point (X, Y)">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition />
+										<ColumnDefinition />
+									</Grid.ColumnDefinitions>
+									<ex:DecimalUpDown Grid.Column="0"
+													Value="{Binding StartPointX}" Minimum="0" Maximum="{Binding MaxPointX, Mode=OneWay}" />
+									<ex:DecimalUpDown Grid.Column="1"
+													Value="{Binding StartPointY}" Minimum="0" Maximum="{Binding MaxPointY, Mode=OneWay}" />
+								</Grid>
+							</GroupBox>
+							<GroupBox Header="End point (X, Y)">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition />
+										<ColumnDefinition />
+									</Grid.ColumnDefinitions>
+									<ex:DecimalUpDown Grid.Column="0"
+													Value="{Binding EndPointX}" Minimum="0" Maximum="{Binding MaxPointX, Mode=OneWay}" />
+									<ex:DecimalUpDown Grid.Column="1"
+													Value="{Binding EndPointY}" Minimum="0" Maximum="{Binding MaxPointY, Mode=OneWay}" />
+								</Grid>
+							</GroupBox>
+							<Grid Margin="4,3,4,3">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition />
+									<ColumnDefinition />
+									<ColumnDefinition />
+								</Grid.ColumnDefinitions>
+								<Button Name="LineAdd" Grid.Column="0" 
+												Content="Add" Click="LineAdd_Click" />
+								<Button Name="LineUpdate" Grid.Column="1" 
+												Content="Update" IsEnabled="False" Click="LineUpdate_Click" />
+								<Button Name="LineDelete" Grid.Column="2" 
+												Content="Delete" IsEnabled="False" Click="LineDelete_Click" />
+							</Grid>
+							<GroupBox Header="List of lines">
+								<ListView Name="LinesListView" MinHeight="70" MaxHeight="150" ItemsSource="{Binding Lines}"
+												SelectionChanged="LinesListView_SelectionChanged">
+									<ListView.View>
+										<GridView>
+											<GridViewColumn Header="Start" DisplayMemberBinding="{Binding Start}" />
+											<GridViewColumn Header="End" DisplayMemberBinding="{Binding End}" />
+											<GridViewColumn Header="Th." DisplayMemberBinding="{Binding Width}" />
+											<GridViewColumn Header="RGB" DisplayMemberBinding="{Binding RGB}" />
+										</GridView>
+									</ListView.View>
+								</ListView>
 							</GroupBox>
 						</StackPanel>
 					</TabItem>
 				</TabControl>
 			</StackPanel>
-			<Grid Grid.Column="1" Margin="0,0,0,0" Name="CanvasGrid">
+			<Grid Grid.Column="0" Margin="0,0,0,0" Name="CanvasGrid">
 				<Grid.RowDefinitions>
 					<RowDefinition />
 					<RowDefinition Height="Auto" />
@@ -193,14 +245,14 @@
 						HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
 						HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
 					<Canvas Name="DrawingArea" 
-						Focusable="True"
+						Focusable="True" SnapsToDevicePixels="True"
 						MouseLeftButtonDown="DrawingArea_MouseLeftButtonDown"
 						MouseLeftButtonUp="DrawingArea_MouseLeftButtonUp"
 						MouseMove="DrawingArea_MouseMove"
 						HorizontalAlignment="Left" VerticalAlignment="Top"
 						Height="{Binding ElementName=DrawingImage, Path=ActualHeight, Mode=OneWay}"
 						Width="{Binding ElementName=DrawingImage, Path=ActualWidth, Mode=OneWay}">
-						<Image Name="DrawingImage" Source="Honda.jpg"
+						<Image Name="DrawingImage" Source="Honda.jpg" SnapsToDevicePixels="True"
 							HorizontalAlignment="Left" VerticalAlignment="Top" />
 						<Rectangle Name="DrawingBrush" Stroke="White" Visibility="Hidden"
 							Width="{Binding SizeOfBrush}" Height="{Binding SizeOfBrush}" />
@@ -209,24 +261,22 @@
 			</Grid>
 		</Grid>
 		<StackPanel Orientation="Horizontal" Grid.Row="2">
-			<TextBlock Text="Brush: "
+			<TextBlock Style="{StaticResource InfoTextLabel}" Text="Tool: " />
+			<TextBlock Style="{StaticResource InfoText}" Text="{Binding Tool, Mode=OneWay}" />
+			<!--<TextBlock Name="ToolInfo" Text="{Binding ToolName, Mode=OneWay}"
+					Style="{StaticResource InfoText}" />-->
+			<!--<TextBlock Text="Brush: "
 					Style="{StaticResource InfoTextLabel}" />
 			<TextBlock Name="BrushShapeInfo" Text="{Binding Shape, Mode=OneWay}"
 					Style="{StaticResource InfoText}" />
 			<TextBlock Text="Size: "
 					Style="{StaticResource InfoTextLabel}" />
 			<TextBlock Name="BrushSizeInfo" Text="{Binding Mode=OneWay, ElementName=BrushSize, Path=Value}"
-					Style="{StaticResource InfoText}" />
-			<TextBlock Text="Tool: "
-					Style="{StaticResource InfoTextLabel}" />
-			<TextBlock Name="ToolKindInfo" Text="{Binding ToolKindName, Mode=OneWay}"
-					Style="{StaticResource InfoText}" />
-			<TextBlock Name="ToolInfo" Text="{Binding ToolName, Mode=OneWay}"
-					Style="{StaticResource InfoText}" />
-			<TextBlock Text="Status: "
+					Style="{StaticResource InfoText}" />-->
+			<!--<TextBlock Text="Status: "
 					Style="{StaticResource InfoTextLabel}" />
 			<TextBlock Name="StatusInfo" Text="{Binding Status, Mode=OneWay}"
-					Style="{StaticResource InfoText}" />
+					Style="{StaticResource InfoText}" />-->
 		</StackPanel>
 	</Grid>
 </Window>
