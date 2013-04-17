@@ -4,6 +4,9 @@ using System.Windows.Media;
 
 namespace GraphicsManipulation
 {
+	/// <summary>
+	/// Gathers basic information about a line drawn on the FastBitmapArray.
+	/// </summary>
 	public class Line
 	{
 		public int StartX;
@@ -15,6 +18,9 @@ namespace GraphicsManipulation
 		public double Green;
 		public double Blue;
 
+		/// <summary>
+		/// Thickness of the line, in pixels.
+		/// </summary>
 		public int Thickness;
 
 		public string Start { get { return String.Format("({0},{1})", StartX, StartY); } }

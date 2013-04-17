@@ -28,6 +28,9 @@ namespace GraphicsManipulation
 		public int Height { get { return height; } }
 		private int height;
 
+		/// <summary>
+		/// Contains red channel of the whole bitmap.
+		/// </summary>
 		public ReadOnlyCollection<ReadOnlyCollection<double>> Red
 		{
 			get
@@ -44,6 +47,9 @@ namespace GraphicsManipulation
 		}
 		private double[][] R;
 
+		/// <summary>
+		/// Contains green channel of the whole bitmap.
+		/// </summary>
 		public ReadOnlyCollection<ReadOnlyCollection<double>> Green
 		{
 			get
@@ -60,6 +66,9 @@ namespace GraphicsManipulation
 		}
 		private double[][] G;
 
+		/// <summary>
+		/// Contains blue channel of the whole bitmap.
+		/// </summary>
 		public ReadOnlyCollection<ReadOnlyCollection<double>> Blue
 		{
 			get
@@ -76,6 +85,9 @@ namespace GraphicsManipulation
 		}
 		private double[][] B;
 
+		/// <summary>
+		/// Contains alpha channel of the whole bitmap.
+		/// </summary>
 		public ReadOnlyCollection<ReadOnlyCollection<double>> Alpha
 		{
 			get
@@ -180,6 +192,10 @@ namespace GraphicsManipulation
 			anythingChanged = false;
 		}
 
+		/// <summary>
+		/// Copies the source bitmap.
+		/// </summary>
+		/// <param name="source"></param>
 		public FastBitmapArray(BitmapSource source)
 			: this(source.PixelWidth, source.PixelHeight)
 		{
@@ -199,6 +215,10 @@ namespace GraphicsManipulation
 			WriteToChannels(0, 0, width, height);
 		}
 
+		/// <summary>
+		/// Copies the source array.
+		/// </summary>
+		/// <param name="source"></param>
 		public FastBitmapArray(FastBitmapArray source)
 			: this(source.width, source.height)
 		{
@@ -207,16 +227,32 @@ namespace GraphicsManipulation
 
 		#region area copy
 
+		/// <summary>
+		/// Copies the whole source array into the current array without updating the changes array.
+		/// </summary>
+		/// <param name="source"></param>
 		public void CopyAreaBatch(FastBitmapArray source)
 		{
-			CopyAreaBatch(source, 0, 0, width - 1, height - 1);
+			CopyAreaBatch(source, 0, 0, source.width - 1, source.height - 1);
 		}
 
+		/// <summary>
+		/// Copies the whole source array into the current array and updates the array with changes.
+		/// </summary>
+		/// <param name="source"></param>
 		public void CopyArea(FastBitmapArray source)
 		{
-			CopyArea(source, 0, 0, width - 1, height - 1);
+			CopyArea(source, 0, 0, source.width - 1, source.height - 1);
 		}
 
+		/// <summary>
+		/// Copies the given area of source array into the same area of current array without updating the changes array.
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="minX"></param>
+		/// <param name="minY"></param>
+		/// <param name="maxX"></param>
+		/// <param name="maxY"></param>
 		public void CopyAreaBatch(FastBitmapArray source, int minX, int minY, int maxX, int maxY)
 		{
 			if (minX < 0)
@@ -240,6 +276,14 @@ namespace GraphicsManipulation
 			}
 		}
 
+		/// <summary>
+		/// Copies the given area of source array into the same area of current array and updates the array with changes.
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="minX"></param>
+		/// <param name="minY"></param>
+		/// <param name="maxX"></param>
+		/// <param name="maxY"></param>
 		public void CopyArea(FastBitmapArray source, int minX, int minY, int maxX, int maxY)
 		{
 			CopyAreaBatch(source, minX, minY, maxX, maxY);
@@ -250,6 +294,15 @@ namespace GraphicsManipulation
 
 		#region pixel setters/getters
 
+		/// <summary>
+		/// Sets all or some channels of the pixel at given point and updates the array with changes.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="red"></param>
+		/// <param name="green"></param>
+		/// <param name="blue"></param>
+		/// <param name="alpha"></param>
 		public void SetPixel(int x, int y, double? red, double? green, double? blue,
 			double? alpha = null)
 		{
@@ -266,6 +319,14 @@ namespace GraphicsManipulation
 			A[x][y] = (double)alpha;
 		}
 
+		/// <summary>
+		/// Sets all channels of the pixel at given point and updates the array with changes.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="red"></param>
+		/// <param name="green"></param>
+		/// <param name="blue"></param>
 		public void SetPixel(int x, int y, double red, double green, double blue)
 		{
 			R[x][y] = red;
@@ -273,21 +334,45 @@ namespace GraphicsManipulation
 			B[x][y] = blue;
 		}
 
+		/// <summary>
+		/// Gets red channel value from given point.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <returns></returns>
 		public double GetRed(int x, int y)
 		{
 			return R[x][y];
 		}
 
+		/// <summary>
+		/// Gets green channel value from given point.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <returns></returns>
 		public double GetGreen(int x, int y)
 		{
 			return G[x][y];
 		}
 
+		/// <summary>
+		/// Gets blue channel value from given point.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <returns></returns>
 		public double GetBlue(int x, int y)
 		{
 			return B[x][y];
 		}
 
+		/// <summary>
+		/// Gets alpha channel value from given point.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <returns></returns>
 		public double GetAlpha(int x, int y)
 		{
 			return A[x][y];
@@ -311,24 +396,48 @@ namespace GraphicsManipulation
 			anythingChanged = true;
 		}
 
+		/// <summary>
+		/// Sets the red channel value at given point and updates the array with changes.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetRed(int x, int y, double value)
 		{
 			Change(x, y);
 			R[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets the green channel value at given point and updates the array with changes.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetGreen(int x, int y, double value)
 		{
 			Change(x, y);
 			G[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets the blue channel value at given point and updates the array with changes.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetBlue(int x, int y, double value)
 		{
 			Change(x, y);
 			B[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets the alpha channel value at given point and updates the array with changes.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetAlpha(int x, int y, double value)
 		{
 			Change(x, y);
@@ -339,11 +448,21 @@ namespace GraphicsManipulation
 
 		#region batched setting
 
+		/// <summary>
+		/// Sets the whole array to 'changed' status, affecting future bitmap creation.
+		/// </summary>
 		public void SetBatchArea()
 		{
 			SetBatchArea(0, 0, width - 1, height - 1);
 		}
 
+		/// <summary>
+		/// Sets the status of given area to 'changed', affecting future bitmap creation.
+		/// </summary>
+		/// <param name="minX"></param>
+		/// <param name="minY"></param>
+		/// <param name="maxX"></param>
+		/// <param name="maxY"></param>
 		public void SetBatchArea(int minX, int minY, int maxX, int maxY)
 		{
 			if (minX < 0)
@@ -374,26 +493,59 @@ namespace GraphicsManipulation
 			anythingChanged = true;
 		}
 
+		/// <summary>
+		/// Sets the red channel value at given point without updating the changes array.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetRedBatch(int x, int y, double value)
 		{
 			R[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets the green channel value at given point without updating the changes array.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetGreenBatch(int x, int y, double value)
 		{
 			G[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets the blue channel value at given point without updating the changes array.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetBlueBatch(int x, int y, double value)
 		{
 			B[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets the alpha channel value at given point without updating the changes array.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="value"></param>
 		public void SetAlphaBatch(int x, int y, double value)
 		{
 			A[x][y] = value;
 		}
 
+		/// <summary>
+		/// Sets all or some channels of the pixel at given point without updating the changes array.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="red"></param>
+		/// <param name="green"></param>
+		/// <param name="blue"></param>
+		/// <param name="alpha"></param>
 		public void SetPixelBatch(int x, int y, double red, double green, double blue, double? alpha = null)
 		{
 			SetRedBatch(x, y, red);
@@ -416,6 +568,17 @@ namespace GraphicsManipulation
 			return x >= 0 && x < width && y >= 0 && y < height;
 		}
 
+		/// <summary>
+		/// Draws the line that has given parameters, using Bresenham's line algorithm.
+		/// </summary>
+		/// <param name="xStart"></param>
+		/// <param name="yStart"></param>
+		/// <param name="xEnd"></param>
+		/// <param name="yEnd"></param>
+		/// <param name="red"></param>
+		/// <param name="green"></param>
+		/// <param name="blue"></param>
+		/// <param name="thickness"></param>
 		public void DrawLine(int xStart, int yStart, int xEnd, int yEnd,
 			double red, double green, double blue, int thickness = 1)
 		{
@@ -562,11 +725,19 @@ namespace GraphicsManipulation
 			}
 		}
 
+		/// <summary>
+		/// Draws the given line, using Bresenham's line algorithm.
+		/// </summary>
+		/// <param name="line"></param>
 		public void DrawLine(Line line)
 		{
 			DrawLine(line.StartX, line.StartY, line.EndX, line.EndY, line.Red, line.Green, line.Blue, line.Thickness);
 		}
 
+		/// <summary>
+		/// Refreshes the underlying bitmap using changes array, and applying given mask shape.
+		/// </summary>
+		/// <param name="mask"></param>
 		public void RefreshBitmap(Mask mask = Mask.Rectangle)
 		{
 			if (mask == Mask.Disabled)
@@ -696,6 +867,11 @@ namespace GraphicsManipulation
 			}
 		}
 
+		/// <summary>
+		/// Refreshes and returns the underlying bitmap.
+		/// </summary>
+		/// <param name="mask"></param>
+		/// <returns></returns>
 		public BitmapSource GetBitmap(Mask mask = Mask.Rectangle)
 		{
 			RefreshBitmap(mask);

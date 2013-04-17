@@ -8,45 +8,55 @@ namespace GraphicsManipulation.Filters
 	/// </summary>
 	public abstract class FilterBrush
 	{
-		//private BrushShapes shape;
-		//public BrushShapes Shape
-		//{
-		//    set { shape = value; }
-		//}
+		public FilterBrush() { }
 
-		public FilterBrush()
+		public void Apply(FastBitmapArray array, bool[][] mask)
 		{
+			ApplyAt(array, BrushShapes.Fill, new Point(array.Width / 2, array.Width / 2), 20, mask);
 		}
 
-		//public FilterBrush(BrushShapes shape)
-		//{
-		//    this.shape = shape;
-		//}
-
-		public void Apply(FastBitmapArray /*bitmap*/array, bool[][] mask)
-		{
-			ApplyAt(array, BrushShapes.Fill, new Point(array.Width / 2, array.Width / 2),
-				 20, mask);
-		}
-
-		public void ApplyAt(FastBitmapArray /*bitmap*/array, BrushShapes shape, Point point, int size,
+		/// <summary>
+		/// Applies the filter at given point of a given FastBitmapArray, using given shape of given size.
+		/// </summary>
+		/// <param name="array">array on which the filter will be applied</param>
+		/// <param name="shape">shape of the brush</param>
+		/// <param name="point">central point of the brush</param>
+		/// <param name="size"> diameter of the brush</param>
+		/// <param name="mask">masking array</param>
+		public void ApplyAt(FastBitmapArray array, BrushShapes shape, Point point, int size,
 			 bool[][] mask)
 		{
-			if (shape == BrushShapes.Fill)
-				Fill(array, mask);
-			else if (shape == BrushShapes.Square)
-				PaintRect(array, new Point(point.X - size / 2, point.Y - size / 2),
-					 size, size, mask);
-			else if (shape == BrushShapes.Circle)
-				PaintCircle(array, point, size, mask);
+			switch (shape)
+			{
+				case BrushShapes.Fill: 
+					Fill(array, mask);
+					break;
+				case BrushShapes.Square: 
+					PaintRect(array, new Point(point.X - size / 2, point.Y - size / 2), size, size, mask);
+					break;
+				case BrushShapes.Circle:
+					PaintCircle(array, point, size, mask);
+					break;
+			}
 		}
-
-		protected void Fill(FastBitmapArray /*bitmap*/array, bool[][] mask)
+		/// <summary>
+		/// Applies this filter on the whole given FastBitmapArray.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <param name="mask"></param>
+		protected void Fill(FastBitmapArray array, bool[][] mask)
 		{
 			PaintRect(array, new Point(0, 0), array.Width, array.Height, mask);
 		}
 
-		protected void PaintCircle(FastBitmapArray /*bitmap*/array, Point point,
+		/// <summary>
+		/// Applies this filter in a given circular area of the given FastBitmapArray.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <param name="point"></param>
+		/// <param name="diameter"></param>
+		/// <param name="mask"></param>
+		protected void PaintCircle(FastBitmapArray array, Point point,
 			 int diameter, bool[][] mask)
 		{
 			int centerX = (int)point.X;
@@ -58,6 +68,7 @@ namespace GraphicsManipulation.Filters
 			int yEnd = y + diameter;
 			bool inBounds = false;
 
+			array.SetBatchArea(x, y, xEnd - 1, yEnd - 1);
 			for (int i = x; i < xEnd; i++)
 			{
 				for (int j = y; j < yEnd; j++)
@@ -77,7 +88,15 @@ namespace GraphicsManipulation.Filters
 			}
 		}
 
-		protected void PaintRect(FastBitmapArray /*bitmap*/array, Point point,
+		/// <summary>
+		/// Applies this filter in a given rectangular area of the given FastBitmapArray.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <param name="point"></param>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <param name="mask"></param>
+		protected void PaintRect(FastBitmapArray array, Point point,
 			 int width, int height, bool[][] mask)
 		{
 			int x = (int)point.X;
@@ -86,6 +105,7 @@ namespace GraphicsManipulation.Filters
 			int yEnd = y + height;
 			bool inBounds = false;
 
+			array.SetBatchArea(x, y, xEnd - 1, yEnd - 1);
 			for (int i = x; i < xEnd; i++)
 			{
 				for (int j = y; j < yEnd; j++)
@@ -105,17 +125,6 @@ namespace GraphicsManipulation.Filters
 
 		private void FilterWithCorrection(FastBitmapArray /*bitmap*/array, int x, int y)
 		{
-			//double red = ((double)bitmap.Red[x][y]) / 255;
-			//double green = ((double)bitmap.Green[x][y]) / 255;
-			//double blue = ((double)bitmap.Blue[x][y]) / 255;
-
-			//if (red < 0) red = 0;
-			//else if (red > 1) red = 1;
-			//if (green < 0) green = 0;
-			//else if (green > 1) green = 1;
-			//if (blue < 0) blue = 0;
-			//else if (blue > 1) blue = 1;
-
 			double red = array.GetRed(x, y);
 			double green = array.GetGreen(x, y);
 			double blue = array.GetBlue(x, y);
@@ -131,12 +140,7 @@ namespace GraphicsManipulation.Filters
 			if (blueNew < 0) blueNew = 0;
 			else if (blueNew > 1) blueNew = 1;
 
-			array.SetRed(x, y, redNew);
-			array.SetGreen(x, y, greenNew);
-			array.SetBlue(x, y, blueNew);
-			//bitmap.Red[x][y] = (byte)(redNew * 255);
-			//bitmap.Green[x][y] = (byte)(greenNew * 255);
-			//bitmap.Blue[x][y] = (byte)(blueNew * 255);
+			array.SetPixelBatch(x, y, redNew, greenNew, blueNew);
 		}
 
 		/// <summary>
