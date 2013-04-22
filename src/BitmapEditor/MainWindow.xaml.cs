@@ -230,6 +230,21 @@ namespace BitmapEditor
 
 		#region Line
 
+		private bool multisamplingForNewLines;
+		public bool MultisamplingForNewLines
+		{
+			get { return multisamplingForNewLines; }
+			set
+			{
+				if (multisamplingForNewLines == value)
+					return;
+				multisamplingForNewLines = value;
+
+				if (PropertyChanged != null)
+					PropertyChanged(this, new PropertyChangedEventArgs("MultisamplingForNewLines"));
+			}
+		}
+
 		private decimal lineThickness;
 		public decimal LineThickness
 		{
@@ -612,6 +627,8 @@ namespace BitmapEditor
 		{
 			bitmapArray = new FastBitmapArray((int)DrawingScrollView.ViewportWidth, (int)DrawingScrollView.ViewportHeight);
 
+			bitmapArrayWithoutLines = null;
+
 			bitmapArray.SetBatchArea(0, 0, bitmapArray.Width - 1, bitmapArray.Height - 1);
 
 			double xJump = 1.0 / bitmapArray.Width;
@@ -936,12 +953,32 @@ namespace BitmapEditor
 						bitmapArray.CopyArea(bitmapArrayTemp);
 						if (bitmapArrayWithoutLines == null)
 							bitmapArrayWithoutLines = new FastBitmapArray(bitmapArray);
-						bitmapArray.DrawLine(startX, startY, endX, endY,
-							lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness);
-						bitmapArray.RefreshBitmap(Mask.Disabled);
-						bitmapArrayTemp = null;
 
-						Lines.Add(new Line(startX, startY, endX, endY, lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness));
+						if (multisamplingForNewLines)
+						{
+							int scaling = 2;
+							bitmapArrayWithoutLines = bitmapArrayWithoutLines.ScaleUp(scaling);
+
+							var l = new Line(scaling * startX, scaling * startY, scaling * endX, scaling * endY,
+								lineColor.ScR, lineColor.ScG, lineColor.ScB, scaling * (int)lineThickness);
+
+							bitmapArrayWithoutLines.DrawLine(l);
+							bitmapArrayWithoutLines = bitmapArrayWithoutLines.ScaleDown(scaling);
+
+							SetBitmapArray(bitmapArrayWithoutLines);
+						}
+						else
+						{
+							var l = new Line(startX, startY, endX, endY,
+								lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness);
+
+							bitmapArray.DrawLine(l);
+							bitmapArray.RefreshBitmap(Mask.Disabled);
+
+							Lines.Add(l);
+						}
+
+						bitmapArrayTemp = null;
 
 						//LineAdd.IsEnabled = true;
 						//LineUpdate.IsEnabled = true;
@@ -1066,11 +1103,30 @@ namespace BitmapEditor
 		{
 			if (bitmapArrayWithoutLines == null)
 				bitmapArrayWithoutLines = new FastBitmapArray(bitmapArray);
-			var l = new Line((int)StartPointX, (int)StartPointY, (int)EndPointX, (int)EndPointY,
-				lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness);
+			if (multisamplingForNewLines)
+			{
+				//bitmapArray.CopyArea(bitmapArrayWithoutLines);
 
-			Lines.Add(l);
-			bitmapArray.DrawLine(l);
+				int scaling = 2;
+				bitmapArrayWithoutLines = bitmapArrayWithoutLines.ScaleUp(scaling);
+
+				var l = new Line(scaling * (int)StartPointX, scaling * (int)StartPointY,
+					scaling * (int)EndPointX, scaling * (int)EndPointY,
+					lineColor.ScR, lineColor.ScG, lineColor.ScB, scaling * (int)lineThickness);
+
+				bitmapArrayWithoutLines.DrawLine(l);
+				bitmapArrayWithoutLines = bitmapArrayWithoutLines.ScaleDown(scaling);
+
+				SetBitmapArray(bitmapArrayWithoutLines);
+			}
+			else
+			{
+				var l = new Line((int)StartPointX, (int)StartPointY, (int)EndPointX, (int)EndPointY,
+					lineColor.ScR, lineColor.ScG, lineColor.ScB, (int)lineThickness);
+
+				Lines.Add(l);
+				bitmapArray.DrawLine(l);
+			}
 		}
 
 		private void LineUpdate_Click(object sender, RoutedEventArgs e)
@@ -1114,7 +1170,7 @@ namespace BitmapEditor
 
 			// redraw lines
 			bitmapArray.CopyArea(bitmapArrayWithoutLines, Math.Min(l.StartX, l.EndX) - l.Thickness,
-				Math.Min(l.StartY, l.EndY) - l.Thickness, Math.Max(l.StartX, l.EndX) + l.Thickness, 
+				Math.Min(l.StartY, l.EndY) - l.Thickness, Math.Max(l.StartX, l.EndX) + l.Thickness,
 				Math.Max(l.StartY, l.EndY) + l.Thickness);
 			//bitmapArray.SetBatchArea(Math.Min(l.StartX, l.EndX), Math.Min(l.StartY, l.EndY),
 			//	Math.Max(l.StartX, l.EndX), Math.Max(l.StartY, l.EndY));

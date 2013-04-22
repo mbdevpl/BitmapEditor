@@ -173,6 +173,10 @@
 					</TabItem>
 					<TabItem Header="Lines">
 						<StackPanel>
+							<GroupBox Header="Multisampling">
+								<CheckBox IsChecked="{Binding MultisamplingForNewLines}"
+										Content="use multisampling when new line&#013;is added (such line cannot be edited)" />
+							</GroupBox>
 							<GroupBox Header="Line thickness">
 								<ex:DecimalUpDown Value="{Binding LineThickness}" Minimum="1" Maximum="50" />
 							</GroupBox>

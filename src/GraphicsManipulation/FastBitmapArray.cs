@@ -734,6 +734,77 @@ namespace GraphicsManipulation
 			DrawLine(line.StartX, line.StartY, line.EndX, line.EndY, line.Red, line.Green, line.Blue, line.Thickness);
 		}
 
+		public FastBitmapArray ScaleUp(int scaling)
+		{
+			var scaledUp = new FastBitmapArray(scaling * width, scaling * height);
+
+			int xScaled = 0;
+			int yScaled = 0;
+			for (int x = 0; x < width; ++x)
+			{
+				yScaled = 0;
+				for (int y = 0; y < height; ++y)
+				{
+					for (int yy = 0; yy < scaling; ++yy)
+						for (int xx = 0; xx < scaling; ++xx)
+						{
+							int xxx= xScaled+xx;
+							int yyy = yScaled+yy;
+							scaledUp.R[xxx][yyy] = R[x][y];
+							scaledUp.G[xxx][yyy] = G[x][y];
+							scaledUp.B[xxx][yyy] = B[x][y];
+							scaledUp.A[xxx][yyy] = A[x][y];
+							scaledUp.changed[xxx][yyy] = true;
+						}
+					yScaled += scaling;
+				}
+				xScaled += scaling;
+			}
+
+			return scaledUp;
+		}
+
+		public FastBitmapArray ScaleDown(int scaling)
+		{
+			if (width % scaling > 0 || height % scaling > 0)
+				throw new ArgumentException("such bitmap cannot be scaled down");
+			var scaledDown = new FastBitmapArray(width / scaling, height / scaling);
+
+			double divisor = scaling * scaling;
+
+			int xScaled = 0;
+			int yScaled = 0;
+			for (int x = 0; x < scaledDown.width; ++x)
+			{
+				yScaled = 0;
+				for (int y = 0; y < scaledDown.height; ++y)
+				{
+					double avgR = 0, avgG = 0, avgB = 0, avgA = 0;
+					for (int yy = 0; yy < scaling; ++yy)
+						for (int xx = 0; xx < scaling; ++xx)
+						{
+							int xxx = xScaled + xx;
+							int yyy = yScaled + yy;
+							avgR += R[xxx][yyy];
+							avgG += G[xxx][yyy];
+							avgB += B[xxx][yyy];
+							avgA += A[xxx][yyy];
+						}
+
+					scaledDown.R[x][y] = avgR / divisor;
+					scaledDown.G[x][y] = avgG / divisor;
+					scaledDown.B[x][y] = avgB / divisor;
+					scaledDown.A[x][y] = avgA / divisor;
+					scaledDown.changed[x][y] = true;
+
+					yScaled += scaling;
+				}
+				xScaled += scaling;
+			}
+
+			return scaledDown;
+		}
+
 		/// <summary>
 		/// Refreshes the underlying bitmap using changes array, and applying given mask shape.
 		/// </summary>

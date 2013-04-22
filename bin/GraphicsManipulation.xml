@@ -43,6 +43,192 @@
             <param name="width"></param>
             <param name="height"></param>
         </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.#ctor(System.Windows.Media.Imaging.BitmapSource)">
+            <summary>
+            Copies the source bitmap.
+            </summary>
+            <param name="source"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.#ctor(GraphicsManipulation.FastBitmapArray)">
+            <summary>
+            Copies the source array.
+            </summary>
+            <param name="source"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.CopyAreaBatch(GraphicsManipulation.FastBitmapArray)">
+            <summary>
+            Copies the whole source array into the current array without updating the changes array.
+            </summary>
+            <param name="source"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.CopyArea(GraphicsManipulation.FastBitmapArray)">
+            <summary>
+            Copies the whole source array into the current array and updates the array with changes.
+            </summary>
+            <param name="source"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.CopyAreaBatch(GraphicsManipulation.FastBitmapArray,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Copies the given area of source array into the same area of current array without updating the changes array.
+            </summary>
+            <param name="source"></param>
+            <param name="minX"></param>
+            <param name="minY"></param>
+            <param name="maxX"></param>
+            <param name="maxY"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.CopyArea(GraphicsManipulation.FastBitmapArray,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Copies the given area of source array into the same area of current array and updates the array with changes.
+            </summary>
+            <param name="source"></param>
+            <param name="minX"></param>
+            <param name="minY"></param>
+            <param name="maxX"></param>
+            <param name="maxY"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetPixel(System.Int32,System.Int32,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Double})">
+            <summary>
+            Sets all or some channels of the pixel at given point and updates the array with changes.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="red"></param>
+            <param name="green"></param>
+            <param name="blue"></param>
+            <param name="alpha"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetPixel(System.Int32,System.Int32,System.Double,System.Double,System.Double)">
+            <summary>
+            Sets all channels of the pixel at given point and updates the array with changes.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="red"></param>
+            <param name="green"></param>
+            <param name="blue"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.GetRed(System.Int32,System.Int32)">
+            <summary>
+            Gets red channel value from given point.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.GetGreen(System.Int32,System.Int32)">
+            <summary>
+            Gets green channel value from given point.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.GetBlue(System.Int32,System.Int32)">
+            <summary>
+            Gets blue channel value from given point.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.GetAlpha(System.Int32,System.Int32)">
+            <summary>
+            Gets alpha channel value from given point.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetRed(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the red channel value at given point and updates the array with changes.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetGreen(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the green channel value at given point and updates the array with changes.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetBlue(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the blue channel value at given point and updates the array with changes.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetAlpha(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the alpha channel value at given point and updates the array with changes.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetBatchArea">
+            <summary>
+            Sets the whole array to 'changed' status, affecting future bitmap creation.
+            </summary>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetBatchArea(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Sets the status of given area to 'changed', affecting future bitmap creation.
+            </summary>
+            <param name="minX"></param>
+            <param name="minY"></param>
+            <param name="maxX"></param>
+            <param name="maxY"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetRedBatch(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the red channel value at given point without updating the changes array.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetGreenBatch(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the green channel value at given point without updating the changes array.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetBlueBatch(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the blue channel value at given point without updating the changes array.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetAlphaBatch(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Sets the alpha channel value at given point without updating the changes array.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.SetPixelBatch(System.Int32,System.Int32,System.Double,System.Double,System.Double,System.Nullable{System.Double})">
+            <summary>
+            Sets all or some channels of the pixel at given point without updating the changes array.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="red"></param>
+            <param name="green"></param>
+            <param name="blue"></param>
+            <param name="alpha"></param>
+        </member>
         <member name="M:GraphicsManipulation.FastBitmapArray.IsInBounds(System.Int32,System.Int32)">
             <summary>
             Checks if given point lays on this bitmap array.
@@ -50,6 +236,38 @@
             <param name="x">horizontal coordinate</param>
             <param name="y">vertical coordinate</param>
             <returns>true if given coordinates denote a point inside this bitmap</returns>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.DrawLine(System.Int32,System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Draws the line that has given parameters, using Bresenham's line algorithm.
+            </summary>
+            <param name="xStart"></param>
+            <param name="yStart"></param>
+            <param name="xEnd"></param>
+            <param name="yEnd"></param>
+            <param name="red"></param>
+            <param name="green"></param>
+            <param name="blue"></param>
+            <param name="thickness"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.DrawLine(GraphicsManipulation.Line)">
+            <summary>
+            Draws the given line, using Bresenham's line algorithm.
+            </summary>
+            <param name="line"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.RefreshBitmap(GraphicsManipulation.Mask)">
+            <summary>
+            Refreshes the underlying bitmap using changes array, and applying given mask shape.
+            </summary>
+            <param name="mask"></param>
+        </member>
+        <member name="M:GraphicsManipulation.FastBitmapArray.GetBitmap(GraphicsManipulation.Mask)">
+            <summary>
+            Refreshes and returns the underlying bitmap.
+            </summary>
+            <param name="mask"></param>
+            <returns></returns>
         </member>
         <member name="P:GraphicsManipulation.FastBitmapArray.Width">
             <summary>
@@ -59,6 +277,26 @@
         <member name="P:GraphicsManipulation.FastBitmapArray.Height">
             <summary>
             Height of the bitmap array in pixels.
+            </summary>
+        </member>
+        <member name="P:GraphicsManipulation.FastBitmapArray.Red">
+            <summary>
+            Contains red channel of the whole bitmap.
+            </summary>
+        </member>
+        <member name="P:GraphicsManipulation.FastBitmapArray.Green">
+            <summary>
+            Contains green channel of the whole bitmap.
+            </summary>
+        </member>
+        <member name="P:GraphicsManipulation.FastBitmapArray.Blue">
+            <summary>
+            Contains blue channel of the whole bitmap.
+            </summary>
+        </member>
+        <member name="P:GraphicsManipulation.FastBitmapArray.Alpha">
+            <summary>
+            Contains alpha channel of the whole bitmap.
             </summary>
         </member>
         <member name="T:GraphicsManipulation.Filters.BrightenFilter">
@@ -71,6 +309,42 @@
             Filters the bitmap (or its part) pixel by pixel using a function defined via 
             implementation of abstract methods.
             </summary>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.ApplyAt(GraphicsManipulation.FastBitmapArray,GraphicsManipulation.Filters.BrushShapes,System.Windows.Point,System.Int32,System.Boolean[][])">
+            <summary>
+            Applies the filter at given point of a given FastBitmapArray, using given shape of given size.
+            </summary>
+            <param name="array">array on which the filter will be applied</param>
+            <param name="shape">shape of the brush</param>
+            <param name="point">central point of the brush</param>
+            <param name="size"> diameter of the brush</param>
+            <param name="mask">masking array</param>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.Fill(GraphicsManipulation.FastBitmapArray,System.Boolean[][])">
+            <summary>
+            Applies this filter on the whole given FastBitmapArray.
+            </summary>
+            <param name="array"></param>
+            <param name="mask"></param>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.PaintCircle(GraphicsManipulation.FastBitmapArray,System.Windows.Point,System.Int32,System.Boolean[][])">
+            <summary>
+            Applies this filter in a given circular area of the given FastBitmapArray.
+            </summary>
+            <param name="array"></param>
+            <param name="point"></param>
+            <param name="diameter"></param>
+            <param name="mask"></param>
+        </member>
+        <member name="M:GraphicsManipulation.Filters.FilterBrush.PaintRect(GraphicsManipulation.FastBitmapArray,System.Windows.Point,System.Int32,System.Int32,System.Boolean[][])">
+            <summary>
+            Applies this filter in a given rectangular area of the given FastBitmapArray.
+            </summary>
+            <param name="array"></param>
+            <param name="point"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+            <param name="mask"></param>
         </member>
         <member name="M:GraphicsManipulation.Filters.FilterBrush.FilterRed(System.Double,System.Double,System.Double)">
             <summary>
@@ -99,6 +373,26 @@
             <param name="b">blue component value, from 0 to 1</param>
             <returns>updated value of the blue component, from 0 to 1</returns>
         </member>
+        <member name="T:GraphicsManipulation.Filters.BrushShapes">
+            <summary>
+            Enumerates available shapes of brushes.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.BrushShapes.Fill">
+            <summary>
+            Brush applies to the whole bitmap.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.BrushShapes.Square">
+            <summary>
+            Brush is square-shaped.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.BrushShapes.Circle">
+            <summary>
+            Brush has shape of a circle.
+            </summary>
+        </member>
         <member name="T:GraphicsManipulation.Filters.CustomFilter">
             <summary>
             Enables application of a completely arbitrary filter.
@@ -114,6 +408,31 @@
         <member name="T:GraphicsManipulation.Filters.DarkenFilter">
             <summary>
             Darkens the image.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Filters.FilterTypes">
+            <summary>
+            Enumerates available types of filters.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.FilterTypes.Identity">
+            <summary>
+            Identity filter, does nothing.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.FilterTypes.Inverse">
+            <summary>
+            Creates the negative of the picture.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.FilterTypes.Grayscale">
+            <summary>
+            Changes the picture into monochromatic one.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Filters.FilterTypes.Custom">
+            <summary>
+            The filter is to be defined by the user at runtime.
             </summary>
         </member>
         <member name="T:GraphicsManipulation.Filters.IdentityFilter">
@@ -153,6 +472,16 @@
         <member name="T:GraphicsManipulation.Filters.RandomFilter">
             <summary>
             Creates a random effect.
+            </summary>
+        </member>
+        <member name="T:GraphicsManipulation.Line">
+            <summary>
+            Gathers basic information about a line drawn on the FastBitmapArray.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Line.Thickness">
+            <summary>
+            Thickness of the line, in pixels.
             </summary>
         </member>
         <member name="T:GraphicsManipulation.Mask">
