@@ -44,6 +44,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Color.cs" />
     <Compile Include="Dithering\ErrorDiffusionConverter.cs" />
     <Compile Include="Dithering\ErrorDiffusionKernelName.cs" />
     <Compile Include="Dithering\OrderedDitheringConverter.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Filters\SingleFilterBrush.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="Mask.cs" />
+    <Compile Include="Point2D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

@@ -1,0 +1,35 @@
+﻿<Window x:Class="ShapePlayer.ShapePlayerWnd"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:w="clr-namespace:ShapePlayer"
+		xmlns:ex="http://schemas.xceed.com/wpf/xaml/toolkit"
+		xmlns:con="http://schemas.kent.boogaart.com/converters"
+		Title="Shape Player - computer graphics project by Mateusz Bysiek @ MiNI, WUT"
+		MinWidth="200" MinHeight="200" Width="600" Height="600"
+		SizeChanged="Window_SizeChanged">
+	<Window.Resources>
+		<Style TargetType="Menu">
+			<Setter Property="Grid.Row" Value="0" />
+		</Style>
+		<Style TargetType="StatusBar">
+			<Setter Property="Grid.Row" Value="2" />
+		</Style>
+	</Window.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<Menu>
+			<MenuItem Header="Load example" Name="OptionLoadExample" />
+			<MenuItem Header="Exit" Name="OptionExit" Click="OptionExit_Click" />
+		</Menu>
+		<Canvas Grid.Row="1">
+			<Image Name="PlayerImage" />
+		</Canvas>
+		<StatusBar>
+			idle
+		</StatusBar>
+	</Grid>
+</Window>

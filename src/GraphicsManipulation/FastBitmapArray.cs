@@ -3,6 +3,8 @@ using System.Windows.Media;
 using System;
 using System.Windows;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GraphicsManipulation
 {
@@ -144,13 +146,8 @@ namespace GraphicsManipulation
 			changed = null;
 		}
 
-		/// <summary>
-		/// Constructs a new empty array. All pixels have color values equal to 0.0,
-		/// and alpha equal to 1.0.
-		/// </summary>
-		/// <param name="width"></param>
-		/// <param name="height"></param>
-		public FastBitmapArray(int width, int height)
+		public FastBitmapArray(int width, int height,
+			double backgroundRed, double backgroundGreen, double backgroundBlue)
 			: this()
 		{
 			this.width = width;
@@ -172,11 +169,11 @@ namespace GraphicsManipulation
 
 				for (int y = 0; y < height; y++)
 				{
-					R[x][y] = 0;
-					G[x][y] = 0;
-					B[x][y] = 0;
-					A[x][y] = 1;
-					changed[x][y] = false;
+					R[x][y] = backgroundRed;
+					G[x][y] = backgroundGreen;
+					B[x][y] = backgroundBlue;
+					A[x][y] = 1.0;
+					changed[x][y] = true;
 				}
 			}
 
@@ -185,11 +182,23 @@ namespace GraphicsManipulation
 			bytesPerPixel = 4;
 			pixelBytes = new byte[height * width * bytesPerPixel];
 
-			xMinChanged = width - 1;
-			xMaxChanged = 0;
-			yMinChanged = height - 1;
-			yMaxChanged = 0;
-			anythingChanged = false;
+			// indication that the whole bitmap has changed
+			xMinChanged = 0;
+			xMaxChanged = width - 1;
+			yMinChanged = 0;
+			yMaxChanged = height - 1;
+			anythingChanged = true;
+		}
+
+		/// <summary>
+		/// Constructs a new empty array. All pixels have color values equal to 0.0,
+		/// and alpha equal to 1.0.
+		/// </summary>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		public FastBitmapArray(int width, int height)
+			: this(width, height, 0.0, 0.0, 0.0)
+		{
 		}
 
 		/// <summary>
@@ -197,7 +206,7 @@ namespace GraphicsManipulation
 		/// </summary>
 		/// <param name="source"></param>
 		public FastBitmapArray(BitmapSource source)
-			: this(source.PixelWidth, source.PixelHeight)
+			: this(source.PixelWidth, source.PixelHeight, 1.0, 1.0, 1.0)
 		{
 			if (source == null)
 				throw new NullReferenceException("source of the bitmap cannot be null");
@@ -213,6 +222,12 @@ namespace GraphicsManipulation
 			source.CopyPixels(pixelBytes, width * bytesPerPixel, 0);
 
 			WriteToChannels(0, 0, width, height);
+
+			xMinChanged = width - 1;
+			xMaxChanged = 0;
+			yMinChanged = height - 1;
+			yMaxChanged = 0;
+			anythingChanged = false;
 		}
 
 		/// <summary>
@@ -493,6 +508,11 @@ namespace GraphicsManipulation
 			anythingChanged = true;
 		}
 
+		public void SetBatchArea(Point2D leftTop, Point2D rightBottom)
+		{
+			SetBatchArea(leftTop.X, leftTop.Y, rightBottom.X, rightBottom.Y);
+		}
+
 		/// <summary>
 		/// Sets the red channel value at given point without updating the changes array.
 		/// </summary>
@@ -548,11 +568,16 @@ namespace GraphicsManipulation
 		/// <param name="alpha"></param>
 		public void SetPixelBatch(int x, int y, double red, double green, double blue, double? alpha = null)
 		{
-			SetRedBatch(x, y, red);
-			SetGreenBatch(x, y, green);
-			SetBlueBatch(x, y, blue);
+			R[x][y] = red;
+			G[x][y] = green;
+			B[x][y] = blue;
 			if (alpha != null)
-				SetAlphaBatch(x, y, alpha.Value);
+				A[x][y] = alpha.Value;
+		}
+
+		public void SetPixelBatch(int x, int y, Color3Ch color)
+		{
+			SetPixelBatch(x, y, color.Red, color.Green, color.Blue);
 		}
 
 		#endregion
@@ -725,6 +750,162 @@ namespace GraphicsManipulation
 			}
 		}
 
+		public void DrawLine(Point2D start, Point2D end,
+			Color3Ch color, int thickness = 1)
+		{
+			DrawLine(start.X, start.Y, end.X, end.Y, color.Red, color.Green, color.Blue, thickness);
+		}
+
+		public void Fill(Color3Ch color)
+		{
+			DrawRectangle(Point2D.Zero, new Point2D(width - 1, height - 1), color);
+		}
+
+		public void DrawRectangle(Point2D leftTop, Point2D rightBottom, Color3Ch color)
+		{
+			//SetBatchArea(leftTop, rightBottom);
+			for (int x = leftTop.X; x <= rightBottom.X; x++)
+				for (int y = leftTop.Y; y <= rightBottom.Y; y++)
+				{
+					R[x][y] = color.Red;
+					G[x][y] = color.Green;
+					B[x][y] = color.Blue;
+				}
+		}
+
+		public void Fill(Point2D from, Color3Ch color)
+		{
+
+		}
+
+		public void DrawPolygon(IList<Point2D> points, Color3Ch color, bool fill, int lineThickness = 0,
+			IList<Point2D> clippingPolygon = null)
+		{
+			if (points == null || points.Count < 3)
+				return;
+
+			var max = points.Count - 1;
+
+			if (!fill || lineThickness > 0)
+			{
+				// simple version
+				for (int i = 0; i < max; ++i)
+				{
+					var pt1 = points[i];
+					var pt2 = points[i + 1];
+
+					DrawLine(pt1, pt2, color, lineThickness);
+				}
+				DrawLine(points[max], points[0], color, lineThickness);
+			}
+
+			if (!fill)
+				return;
+
+			IList<Tuple<Point2D, Point2D>> edges = new List<Tuple<Point2D, Point2D>>();
+
+			if (points[max].Y > points[0].Y)
+				edges.Add(new Tuple<Point2D, Point2D>(points[0], points[max]));
+			else
+				edges.Add(new Tuple<Point2D, Point2D>(points[max], points[0]));
+
+			for (int i = 0; i < max; ++i)
+			{
+				bool invert = points[i].Y > points[i + 1].Y;
+				var pt1 = invert ? points[i + 1] : points[i];
+				var pt2 = invert ? points[i] : points[i + 1];
+
+				int k;
+				for (k = 0; k < edges.Count; ++k)
+					if (edges[k].Item1.Y > pt1.Y)
+						break;
+
+				edges.Insert(k, new Tuple<Point2D, Point2D>(pt1, pt2));
+			}
+
+			bool[] active = new bool[edges.Count];
+			double[] ratios = new double[edges.Count];
+			double[] xs = new double[edges.Count];
+
+			//Parallel.For(0, edges.Count, (int i) =>
+			for (int i = 0; i < edges.Count; ++i)
+			{
+				active[i] = false;
+				ratios[i] = ((double)(edges[i].Item2.X - edges[i].Item1.X)) / (edges[i].Item2.Y - edges[i].Item1.Y);
+				xs[i] = edges[i].Item1.X;
+			}
+			//);
+
+			int minActive = edges.Count;
+			int maxActive = 0;
+
+			for (int y = edges[0].Item1.Y; y < height; ++y)
+			{
+				// modify coordinates of active x coordinates
+				for (int i = 0; i < edges.Count; ++i)
+					if (active[i])
+						xs[i] += ratios[i];
+
+				// activate/deactivate edges
+				bool noneActive = true;
+				for (int i = 0; i < edges.Count; ++i)
+				{
+					active[i] = y >= edges[i].Item1.Y && y < edges[i].Item2.Y;
+					if (!active[i])
+						continue;
+
+					noneActive = false;
+					if (i < minActive)
+						minActive = i;
+					if (i > maxActive)
+						maxActive = i;
+				}
+				if (noneActive)
+					break;
+
+				// compose a list of x coordinates of current borders
+				List<int> xx = new List<int>();
+				for (int i = minActive; i <= maxActive; ++i)
+					if (active[i])
+					{
+						int j;
+						for (j = 0; j < xx.Count; ++j)
+							if (xx[j] >= xs[i])
+								break;
+						xx.Insert(j, (int)Math.Round(xs[i]));
+					}
+
+				// draw
+				bool isDrawing = true;
+				int xchecked = 1;
+				//if (xx.Count > 2)
+				//	xchecked = xchecked + 1 - 1;
+
+				if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(xx[0], y)))
+					SetPixelBatch(xx[0], y, color);
+
+				for (int x = xx[0]; x < width; ++x)
+				{
+					if (x >= xx[xchecked])
+					{
+						++xchecked;
+						isDrawing = !isDrawing;
+					}
+
+					if (!isDrawing && xchecked == xx.Count)
+						break;
+
+					if (isDrawing)
+					{
+						if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(x, y)))
+							SetPixelBatch(x, y, color);
+					}
+					else
+						x = xx[xchecked] - 1;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Draws the given line, using Bresenham's line algorithm.
 		/// </summary>
@@ -748,8 +929,8 @@ namespace GraphicsManipulation
 					for (int yy = 0; yy < scaling; ++yy)
 						for (int xx = 0; xx < scaling; ++xx)
 						{
-							int xxx= xScaled+xx;
-							int yyy = yScaled+yy;
+							int xxx = xScaled + xx;
+							int yyy = yScaled + yy;
 							scaledUp.R[xxx][yyy] = R[x][y];
 							scaledUp.G[xxx][yyy] = G[x][y];
 							scaledUp.B[xxx][yyy] = B[x][y];

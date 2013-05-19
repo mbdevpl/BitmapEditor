@@ -1,18 +1,13 @@
-﻿<!-- Task 1: 
-    Design a simple raster graphics editor that enables user to
-    apply a filter using a brush. Program has to implement 10 example filters.
-    -->
-<!-- -->
-<Window x:Class="BitmapEditor.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:w="clr-namespace:BitmapEditor"
-        xmlns:ex="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:con="http://schemas.kent.boogaart.com/converters"
-        Name="EditorWindow" Width="800" Height="500" 
-        MinWidth="350" MinHeight="300"
-		  Icon="Icon.ico"
-        Title="Bitmap Editor - computer graphics project by Mateusz Bysiek @ MiNI, WUT">
+﻿<Window x:Class="BitmapEditor.MainWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:w="clr-namespace:BitmapEditor"
+		xmlns:ex="http://schemas.xceed.com/wpf/xaml/toolkit"
+		xmlns:con="http://schemas.kent.boogaart.com/converters"
+		Name="EditorWindow" Width="800" Height="500" 
+		MinWidth="350" MinHeight="300"
+		Icon="Icon.ico"
+		Title="Bitmap Editor - computer graphics project by Mateusz Bysiek @ MiNI, WUT">
 	<Window.Resources>
 		<Style TargetType="StackPanel">
 			<Setter Property="Margin" Value="2,1,2,1" />
@@ -27,6 +22,12 @@
 			<Setter Property="Margin" Value="0,1,0,1" />
 			<Setter Property="Padding" Value="4,1,4,1" />
 		</Style>
+		<Style TargetType="Menu">
+			<Setter Property="Grid.Row" Value="0" />
+		</Style>
+		<Style TargetType="StatusBar">
+			<Setter Property="Grid.Row" Value="2" />
+		</Style>
 	</Window.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
@@ -34,7 +35,7 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<Menu Grid.Row="0">
+		<Menu>
 			<!--<MenuItem Header="Undo all changes" Name="OptionUndoAll" />-->
 			<MenuItem Header="Save image as" Name="OptionSaveAs" Click="OptionSaveAs_Click" />
 			<MenuItem Header="Load image" Name="OptionLoad" Click="OptionLoad_Click" />
@@ -264,7 +265,7 @@
 				</ScrollViewer>
 			</Grid>
 		</Grid>
-		<StackPanel Orientation="Horizontal" Grid.Row="2">
+		<StatusBar>
 			<TextBlock Style="{StaticResource InfoTextLabel}" Text="Tool: " />
 			<TextBlock Style="{StaticResource InfoText}" Text="{Binding Tool, Mode=OneWay}" />
 			<!--<TextBlock Name="ToolInfo" Text="{Binding ToolName, Mode=OneWay}"
@@ -281,6 +282,8 @@
 					Style="{StaticResource InfoTextLabel}" />
 			<TextBlock Name="StatusInfo" Text="{Binding Status, Mode=OneWay}"
 					Style="{StaticResource InfoText}" />-->
-		</StackPanel>
+		</StatusBar>
+		<!--<StackPanel Orientation="Horizontal" Grid.Row="2">
+		</StackPanel>-->
 	</Grid>
 </Window>
