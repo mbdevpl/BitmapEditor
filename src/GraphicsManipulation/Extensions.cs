@@ -375,16 +375,31 @@ namespace GraphicsManipulation
 			Point otherLineStartPoint, Point otherLineEndPoint, bool intersectionExistsForSure)
 		{
 			if (intersectionExistsForSure || CheckIfIntersects(thisPoint, endPoint, otherLineStartPoint, otherLineEndPoint))
-				return thisPoint.Copy().MoveTo(endPoint, thisPoint.DistanceToLine(otherLineStartPoint, otherLineEndPoint, false));
+			{
+				double a1 = endPoint.Y - thisPoint.Y;
+				double b1 = thisPoint.X - endPoint.X;
+				double c1 = a1 * thisPoint.X + b1 * thisPoint.Y;
+
+				double a2 = otherLineEndPoint.Y - otherLineStartPoint.Y;
+				double b2 = otherLineStartPoint.X - otherLineEndPoint.X;
+				double c2 = a2 * otherLineStartPoint.X + b2 * otherLineStartPoint.Y;
+
+				double denominator = a1 * b2 - a2 * b1;
+
+				double x = (b2 * c1 - b1 * c2) / denominator;
+				double y = (a1 * c2 - a2 * c1) / denominator;
+
+				return new Point(x, y);
+			}
 
 			throw new InvalidOperationException("these lines do not intersect");
 		}
 
-		public static bool IsInside(this IList<Point2D> polygon, Point2D point)
+		public static bool IsInside(this Point2D point, IList<Point2D> polygon)
 		{
 			bool[] intersections = new bool[polygon.Count];
 
-			Point e21 = new Point(point.X, point.Y), e22 = new Point(point.X - 500, point.Y-10);
+			Point e21 = new Point(point.X, point.Y), e22 = new Point(point.X - 500, point.Y - 10);
 
 			//if (polygon.Count < 10)
 			//{
@@ -428,44 +443,432 @@ namespace GraphicsManipulation
 			return (intersections.Count(x => x == true) % 2) != 0;
 		}
 
-		public static void Clip(this IList<Point2D> polygon, IList<Point2D> clip)
+		public static IList<Point2D>[] Clip(this IList<Point2D> polygon, IList<Point2D> clip)
 		{
-			var polygonCopy = polygon.Copy();
+			/// <summary>
+			/// n-th element contains:
+			///  1) instersection location,
+			///  2) distance to n-th vertex in THIS polygon,
+			///  3) index of vertex in OTHER polygon that has this intersection
+			/// </summary>
+			IList<Tuple<Point2D, double, int>>[] intersectionsInPolygon; // = new IList<Tuple<Point2D, double, int>>[polygon.Count];
+			IList<Tuple<Point2D, double, int>>[] intersectionsInClip; // = new IList<Tuple<Point2D, double, int>>[clip.Count];
 
-			var clipCopy = clip.Copy();
+			FindAllIntersections(polygon, clip, out intersectionsInPolygon, out intersectionsInClip);
 
+			if (intersectionsInPolygon.All(x => ReferenceEquals(x, null)))
+			{
+				for (int i1 = 0; i1 < polygon.Count - 1; ++i1)
+					if (polygon[i1].IsInside(clip))
+						return new IList<Point2D>[] { polygon };
+				return new IList<Point2D>[] { };
+			}
+
+			bool[] isInClip; // = new bool[polygon.Count];
+			bool[] isInPolygon; // = new bool[clip.Count];
+
+			/*int firstInside =*/ CheckContainmentOfPoints(polygon, clip, out isInClip, out isInPolygon);
+
+			// unordered list of all points that will be then sorted
+			// and possibly divided into fragments that will then be returned;
+			// this list includes all points that make up the clipped shape
+			IList<Point2D> allPoints = new List<Point2D>();
+
+			for (int i1 = 0; i1 < polygon.Count; ++i1)
+			{
+				if (isInClip[i1])
+					//if (!allPoints.Contains(polygon[i1]))
+					allPoints.Add(polygon[i1]);
+				if (intersectionsInPolygon[i1] != null)
+					foreach (var tuple in intersectionsInPolygon[i1])
+						//if (!allPoints.Contains(tuple.Item1))
+						allPoints.Add(tuple.Item1);
+			}
+
+			for (int i2 = 0; i2 < clip.Count; ++i2)
+			{
+				if (isInPolygon[i2])
+					//if (!allPoints.Contains(clip[i2]))
+					allPoints.Add(clip[i2]);
+				//if (intersectionsInClip[i2] != null)
+				//	foreach (var tuple in intersectionsInClip[i2])
+				//		allPoints.Add(tuple.Item1);
+			}
+
+			IList<IList<Point2D>> fragments = new List<IList<Point2D>>();
+
+			while (allPoints.Count > 0)
+			{
+				Point2D start = allPoints[0];
+				Point2D current = start;
+				IList<Point2D> fragment = new List<Point2D>();
+				do
+				{
+					fragment.Add(current);
+
+					Point2D next = null;
+
+					allPoints.Remove(current);
+
+					int polygonIndex = polygon.IndexOf(current);
+					if (polygonIndex >= 0)
+					{
+						#region moving from polygon's vertex
+						// try to traverse forward
+						if (intersectionsInPolygon[polygonIndex] == null)
+						{
+							if (polygonIndex < polygon.Count - 1)
+							{
+								if (allPoints.Contains(polygon[polygonIndex + 1]))
+									next = polygon[polygonIndex + 1];
+							}
+							else if (allPoints.Contains(polygon[0]))
+								next = polygon[0];
+						}
+						else
+						{
+							if (allPoints.Contains(intersectionsInPolygon[polygonIndex][0].Item1))
+								next = intersectionsInPolygon[polygonIndex][0].Item1;
+						}
+
+						// try to traverse backwards
+						if (next == null)
+						{
+							var prevIntersections = polygonIndex > 0 ? intersectionsInPolygon[polygonIndex - 1] : intersectionsInPolygon[polygon.Count - 1];
+							if (prevIntersections == null)
+							{
+								if (polygonIndex > 0)
+								{
+									if (allPoints.Contains(polygon[polygonIndex - 1]))
+										next = polygon[polygonIndex - 1];
+								}
+								else if (allPoints.Contains(polygon[polygon.Count - 1]))
+									next = polygon[polygon.Count - 1];
+							}
+							else
+							{
+								if (allPoints.Contains(prevIntersections[prevIntersections.Count - 1].Item1))
+									next = prevIntersections[prevIntersections.Count - 1].Item1;
+							}
+						}
+						#endregion
+					}
+
+					if (next == null)
+					{
+						int clipIndex = clip.IndexOf(current);
+						if (clipIndex >= 0)
+						{
+							#region moving from clip's vertex
+							// try to traverse forward
+							if (intersectionsInClip[clipIndex] == null)
+							{
+								if (clipIndex < clip.Count - 1)
+								{
+									if (allPoints.Contains(clip[clipIndex + 1]))
+										next = clip[clipIndex + 1];
+								}
+								else if (allPoints.Contains(clip[0]))
+									next = clip[0];
+							}
+							else
+							{
+								if (allPoints.Contains(intersectionsInClip[clipIndex][0].Item1))
+									next = intersectionsInClip[clipIndex][0].Item1;
+							}
+
+							// try to traverse backwards
+							if (next == null)
+							{
+								var prevIntersections = clipIndex > 0 ? intersectionsInClip[clipIndex - 1] : intersectionsInClip[clip.Count - 1];
+								if (prevIntersections == null)
+								{
+									if (clipIndex > 0)
+									{
+										if (allPoints.Contains(clip[clipIndex - 1]))
+											next = clip[clipIndex - 1];
+									}
+									else if (allPoints.Contains(clip[clip.Count - 1]))
+										next = clip[clip.Count - 1];
+								}
+								else
+								{
+									if (allPoints.Contains(prevIntersections[prevIntersections.Count - 1].Item1))
+										next = prevIntersections[prevIntersections.Count - 1].Item1;
+								}
+							}
+							#endregion
+						}
+
+					}
+
+					if (next == null)
+					{
+						bool foundInPolygonIntersections = false;
+						Tuple<Point2D, double, int> tuple = null;
+						int polygonIntersectionsIndex = -1;
+						int tupleIndex = -1;
+						foreach (var tuples in intersectionsInPolygon)
+						{
+							++polygonIntersectionsIndex;
+							if (tuples == null)
+								continue;
+							for (int i = 0; i < tuples.Count; ++i)
+								if (current == tuples[i].Item1)
+								{
+									foundInPolygonIntersections = true;
+									tuple = tuples[i];
+									tupleIndex = i;
+									break;
+								}
+							if (foundInPolygonIntersections)
+								break;
+						}
+						if (foundInPolygonIntersections)
+						{
+							#region moving from an intersection
+							if (isInClip[polygonIntersectionsIndex])
+							{
+								if (tupleIndex == 0)
+								{
+									if (allPoints.Contains(polygon[polygonIntersectionsIndex]))
+										next = polygon[polygonIntersectionsIndex];
+								}
+								else if (tupleIndex % 2 == 0)
+								{
+									if (allPoints.Contains(intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex - 1].Item1))
+										next = intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex - 1].Item1;
+								}
+								else
+								{
+									if (tupleIndex < intersectionsInPolygon[polygonIntersectionsIndex].Count - 1)
+									{
+										if (allPoints.Contains(intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex + 1].Item1))
+											next = intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex + 1].Item1;
+									}
+									else if (polygonIntersectionsIndex < polygon.Count - 1)
+									{
+										if (allPoints.Contains(polygon[polygonIntersectionsIndex + 1]))
+											next = polygon[polygonIntersectionsIndex + 1];
+									}
+									else if (allPoints.Contains(polygon[0]))
+										next = polygon[0];
+								}
+							}
+							else
+							{
+								if (tupleIndex % 2 == 0)
+								{
+									if (tupleIndex < intersectionsInPolygon[polygonIntersectionsIndex].Count - 1)
+									{
+										if (allPoints.Contains(intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex + 1].Item1))
+											next = intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex + 1].Item1;
+									}
+									else if (polygonIntersectionsIndex < polygon.Count - 1)
+									{
+										if (allPoints.Contains(polygon[polygonIntersectionsIndex + 1]))
+											next = polygon[polygonIntersectionsIndex + 1];
+									}
+									else if (allPoints.Contains(polygon[0]))
+										next = polygon[0];
+								}
+								else if (allPoints.Contains(intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex - 1].Item1))
+									next = intersectionsInPolygon[polygonIntersectionsIndex][tupleIndex - 1].Item1;
+							}
+							#endregion
+						}
+					}
+
+					if (next == null)
+					{
+						bool foundInClipIntersections = false;
+						Tuple<Point2D, double, int> tuple = null;
+						int clipIntersectionsIndex = -1;
+						int tupleIndex = -1;
+						foreach (var tuples in intersectionsInClip)
+						{
+							++clipIntersectionsIndex;
+							if (tuples == null)
+								continue;
+							for (int i = 0; i < tuples.Count; ++i)
+								if (current == tuples[i].Item1)
+								{
+									foundInClipIntersections = true;
+									tuple = tuples[i];
+									tupleIndex = i;
+									break;
+								}
+							if (foundInClipIntersections)
+								break;
+						}
+						if (foundInClipIntersections)
+						{
+							#region moving from an intersection
+							if (isInPolygon[clipIntersectionsIndex])
+							{
+								if (tupleIndex == 0)
+								{
+									if (allPoints.Contains(clip[clipIntersectionsIndex]))
+										next = clip[clipIntersectionsIndex];
+								}
+								else if (tupleIndex % 2 == 0)
+								{
+									if (allPoints.Contains(intersectionsInClip[clipIntersectionsIndex][tupleIndex - 1].Item1))
+										next = intersectionsInClip[clipIntersectionsIndex][tupleIndex - 1].Item1;
+								}
+								else
+								{
+									if (tupleIndex < intersectionsInClip[clipIntersectionsIndex].Count - 1)
+									{
+										if (allPoints.Contains(intersectionsInClip[clipIntersectionsIndex][tupleIndex + 1].Item1))
+											next = intersectionsInClip[clipIntersectionsIndex][tupleIndex + 1].Item1;
+									}
+									else if (clipIntersectionsIndex < clip.Count - 1)
+									{
+										if (allPoints.Contains(clip[clipIntersectionsIndex + 1]))
+											next = clip[clipIntersectionsIndex + 1];
+									}
+									else if (allPoints.Contains(clip[0]))
+										next = clip[0];
+								}
+							}
+							else
+							{
+								if (tupleIndex % 2 == 0)
+								{
+									if (tupleIndex < intersectionsInClip[clipIntersectionsIndex].Count - 1)
+									{
+										if (allPoints.Contains(intersectionsInClip[clipIntersectionsIndex][tupleIndex + 1].Item1))
+											next = intersectionsInClip[clipIntersectionsIndex][tupleIndex + 1].Item1;
+									}
+									else if (clipIntersectionsIndex < clip.Count - 1)
+									{
+										if (allPoints.Contains(clip[clipIntersectionsIndex + 1]))
+											next = clip[clipIntersectionsIndex + 1];
+									}
+									else if (allPoints.Contains(clip[0]))
+										next = clip[0];
+								}
+								else if (allPoints.Contains(intersectionsInClip[clipIntersectionsIndex][tupleIndex - 1].Item1))
+									next = intersectionsInClip[clipIntersectionsIndex][tupleIndex - 1].Item1;
+							}
+							#endregion
+						}
+					}
+
+					current = next;
+				}
+				while (current != null);
+
+				fragments.Add(fragment);
+			}
+
+			return fragments.ToArray();
+		}
+
+		private static void FindAllIntersections(IList<Point2D> polygon, IList<Point2D> clip,
+			out IList<Tuple<Point2D, double, int>>[] intersectionsInPolygon,
+			out IList<Tuple<Point2D, double, int>>[] intersectionsInClip)
+		{
 			Point e11 = new Point(), e12 = new Point(), e21 = new Point(), e22 = new Point();
 
-			for (int i1 = 0; i1 < polygon.Count - 1; ++i1)
+			intersectionsInPolygon = new IList<Tuple<Point2D, double, int>>[polygon.Count];
+			intersectionsInClip = new IList<Tuple<Point2D, double, int>>[clip.Count];
+
+			for (int i1 = 0; i1 < polygon.Count; ++i1)
 			{
 				e11.X = polygon[i1].X;
 				e11.Y = polygon[i1].Y;
-				e12.X = polygon[i1 + 1].X;
-				e12.Y = polygon[i1 + 1].Y;
+				if (i1 == polygon.Count - 1)
+				{
+					e12.X = polygon[0].X;
+					e12.Y = polygon[0].Y;
+				}
+				else
+				{
+					e12.X = polygon[i1 + 1].X;
+					e12.Y = polygon[i1 + 1].Y;
+				}
 
-				//bool e11i = IsInside(clip, polygon[i1]);
-				//bool e12i = IsInside(clip, polygon[i1 + 1]);
-
-				for (int i2 = 0; i2 < clip.Count - 1; ++i2)
+				for (int i2 = 0; i2 < clip.Count; ++i2)
 				{
 					e21.X = clip[i2].X;
 					e21.Y = clip[i2].Y;
-					e22.X = clip[i2 + 1].X;
-					e22.Y = clip[i2 + 1].Y;
+					if (i2 == clip.Count - 1)
+					{
+						e22.X = clip[0].X;
+						e22.Y = clip[0].Y;
+					}
+					else
+					{
+						e22.X = clip[i2 + 1].X;
+						e22.Y = clip[i2 + 1].Y;
+					}
 
 					if (!CheckIfIntersects(e11, e12, e21, e22))
 						continue;
 
-					var intersection = FindIntersection(e11, e12, e21, e22, true);
+					Point intersection = FindIntersection(e11, e12, e21, e22, true);
+					int intersectionX = (int)Math.Round(intersection.X);
+					int intersectionY = (int)Math.Round(intersection.Y);
+					Point2D intrsct = new Point2D(intersectionX, intersectionY);
 
-					bool e21i = IsInside(polygon, clip[i1]);
-					bool e22i = IsInside(polygon, clip[i1 + 1]);
+					// modify clipped polygon intersections list
+					if (intersectionsInPolygon[i1] == null)
+					{
+						// initialize current edge's intersections list
+						intersectionsInPolygon[i1] = new List<Tuple<Point2D, double, int>>();
+						intersectionsInPolygon[i1].Add(new Tuple<Point2D, double, int>(intrsct, e11.Distance(intersection), i2));
+					}
+					else
+					{
+						// insert intersection in proper place
+						double distance = e11.Distance(intersection);
+						int k = 0;
+						for (; k < intersectionsInPolygon[i1].Count; ++k)
+							if (intersectionsInPolygon[i1][k].Item2 >= distance)
+								break;
+						intersectionsInPolygon[i1].Insert(k, new Tuple<Point2D, double, int>(intrsct, distance, i2));
+					}
 
-					throw new NotImplementedException();
+					// modify clipping polygon intersections list
+					if (intersectionsInClip[i2] == null)
+					{
+						// initialize current edge's intersections list
+						intersectionsInClip[i2] = new List<Tuple<Point2D, double, int>>();
+						intersectionsInClip[i2].Add(new Tuple<Point2D, double, int>(intrsct, e21.Distance(intersection), i1));
+					}
+					else
+					{
+						// insert intersection in proper place
+						double distance = e21.Distance(intersection);
+						int k = 0;
+						for (; k < intersectionsInClip[i2].Count; ++k)
+							if (intersectionsInClip[i2][k].Item2 >= distance)
+								break;
+						intersectionsInClip[i2].Insert(k, new Tuple<Point2D, double, int>(intrsct, distance, i1));
+					}
 				}
 			}
+		}
 
+		private static int CheckContainmentOfPoints(IList<Point2D> polygon, IList<Point2D> clip, out bool[] isInClip, out bool[] isInPolygon)
+		{
+			isInClip = new bool[polygon.Count];
+			isInPolygon = new bool[clip.Count];
 
+			int firstInside = -1;
+			for (int i1 = 0; i1 < polygon.Count; ++i1)
+			{
+				isInClip[i1] = polygon[i1].IsInside(clip);
+				if (firstInside == -1 && isInClip[i1])
+					firstInside = i1;
+			}
+
+			for (int i2 = 0; i2 < clip.Count; ++i2)
+				isInPolygon[i2] = clip[i2].IsInside(polygon);
+
+			return firstInside;
 		}
 
 	}

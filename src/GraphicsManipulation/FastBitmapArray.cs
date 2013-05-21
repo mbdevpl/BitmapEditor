@@ -763,6 +763,8 @@ namespace GraphicsManipulation
 
 		public void DrawRectangle(Point2D leftTop, Point2D rightBottom, Color3Ch color)
 		{
+			Change(leftTop.X, leftTop.Y);
+			Change(rightBottom.X, rightBottom.Y);
 			//SetBatchArea(leftTop, rightBottom);
 			for (int x = leftTop.X; x <= rightBottom.X; x++)
 				for (int y = leftTop.Y; y <= rightBottom.Y; y++)
@@ -781,7 +783,7 @@ namespace GraphicsManipulation
 		public void DrawPolygon(IList<Point2D> points, Color3Ch color, bool fill, int lineThickness = 0,
 			IList<Point2D> clippingPolygon = null)
 		{
-			if (points == null || points.Count < 3)
+			if (points == null || points.Count < 1)
 				return;
 
 			var max = points.Count - 1;
@@ -809,11 +811,19 @@ namespace GraphicsManipulation
 			else
 				edges.Add(new Tuple<Point2D, Point2D>(points[max], points[0]));
 
+			int minx = width - 1;
+			int maxx = 0;
+
 			for (int i = 0; i < max; ++i)
 			{
 				bool invert = points[i].Y > points[i + 1].Y;
 				var pt1 = invert ? points[i + 1] : points[i];
 				var pt2 = invert ? points[i] : points[i + 1];
+
+				int tempx = Math.Min(pt1.X, pt2.X);
+				if (tempx < minx) minx = tempx;
+				tempx = Math.Max(pt1.X, pt2.X);
+				if (tempx > maxx) maxx = tempx;
 
 				int k;
 				for (k = 0; k < edges.Count; ++k)
@@ -822,6 +832,9 @@ namespace GraphicsManipulation
 
 				edges.Insert(k, new Tuple<Point2D, Point2D>(pt1, pt2));
 			}
+
+			Change(Math.Max(minx, 0), edges[0].Item1.Y);
+			Change(Math.Min(maxx, width - 1), edges[max].Item2.Y);
 
 			bool[] active = new bool[edges.Count];
 			double[] ratios = new double[edges.Count];
@@ -881,10 +894,13 @@ namespace GraphicsManipulation
 				//if (xx.Count > 2)
 				//	xchecked = xchecked + 1 - 1;
 
-				if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(xx[0], y)))
-					SetPixelBatch(xx[0], y, color);
+				//if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(xx[0], y)))
+				//SetPixelBatch(xx[0], y, color);
+				R[xx[0]][y] = color.Red;
+				G[xx[0]][y] = color.Green;
+				B[xx[0]][y] = color.Blue;
 
-				for (int x = xx[0]; x < width; ++x)
+				for (int x = xx[0] + 1; x < width; ++x)
 				{
 					if (x >= xx[xchecked])
 					{
@@ -892,16 +908,20 @@ namespace GraphicsManipulation
 						isDrawing = !isDrawing;
 					}
 
-					if (!isDrawing && xchecked == xx.Count)
-						break;
-
 					if (isDrawing)
 					{
-						if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(x, y)))
-							SetPixelBatch(x, y, color);
+						//if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(x, y)))
+						//SetPixelBatch(x, y, color);
+						R[x][y] = color.Red;
+						G[x][y] = color.Green;
+						B[x][y] = color.Blue;
 					}
 					else
+					{
+						if (xchecked == xx.Count)
+							break;
 						x = xx[xchecked] - 1;
+					}
 				}
 			}
 		}
@@ -997,7 +1017,7 @@ namespace GraphicsManipulation
 				//mask is disabled, therefore the whole image will be repainted
 				Int32Rect maskingRect = new Int32Rect(0, 0, width, height);
 
-				WriteToPixelBytes(0, 0, width, height);
+				WriteToPixelBytes();
 
 				int delta = width * bytesPerPixel;
 
@@ -1109,7 +1129,6 @@ namespace GraphicsManipulation
 				index = x * bytesPerPixel;
 				for (int y = yMin; y < yMax; y++)
 				{
-					//int index = (i + j * width) * 4;
 					pixelBytes[index + 2] = (byte)(MaxByteValue * R[x][y]);
 					pixelBytes[index + 1] = (byte)(MaxByteValue * G[x][y]);
 					pixelBytes[index + 0] = (byte)(MaxByteValue * B[x][y]);
@@ -1117,6 +1136,20 @@ namespace GraphicsManipulation
 					index += delta;
 				}
 			}
+		}
+
+		private void WriteToPixelBytes()
+		{
+			int index = -1;
+			for (int y = 0; y < height; y++)
+				for (int x = 0; x < width; x++)
+				{
+					// Bgra32
+					pixelBytes[++index] = (byte)(MaxByteValue * B[x][y]);
+					pixelBytes[++index] = (byte)(MaxByteValue * G[x][y]);
+					pixelBytes[++index] = (byte)(MaxByteValue * R[x][y]);
+					pixelBytes[++index] = (byte)(MaxByteValue * A[x][y]);
+				}
 		}
 
 		/// <summary>

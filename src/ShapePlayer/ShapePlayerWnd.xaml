@@ -22,14 +22,16 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 		<Menu>
-			<MenuItem Header="Load example" Name="OptionLoadExample" />
+			<MenuItem Header="Load example" Name="OptionLoadExample">
+				<MenuItem Header="Creepy teeth-like waves with dolphin and freaky sun." IsEnabled="False" />
+			</MenuItem>
 			<MenuItem Header="Exit" Name="OptionExit" Click="OptionExit_Click" />
 		</Menu>
 		<Canvas Grid.Row="1">
 			<Image Name="PlayerImage" />
 		</Canvas>
 		<StatusBar>
-			idle
+			ready
 		</StatusBar>
 	</Grid>
 </Window>
