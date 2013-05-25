@@ -5,8 +5,13 @@
 		xmlns:ex="http://schemas.xceed.com/wpf/xaml/toolkit"
 		xmlns:con="http://schemas.kent.boogaart.com/converters"
 		Title="Shape Player - computer graphics project by Mateusz Bysiek @ MiNI, WUT"
-		MinWidth="200" MinHeight="200" Width="600" Height="600"
-		SizeChanged="Window_SizeChanged">
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:c="comment" mc:Ignorable="c"
+		MinWidth="200" MinHeight="200" Width="550" Height="450"
+		Icon="Icon.ico"
+		c:Left="-800"
+		SizeChanged="Window_SizeChanged"
+		KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
 	<Window.Resources>
 		<Style TargetType="Menu">
 			<Setter Property="Grid.Row" Value="0" />
@@ -22,16 +27,15 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 		<Menu>
-			<MenuItem Header="Load example" Name="OptionLoadExample">
-				<MenuItem Header="Creepy teeth-like waves with dolphin and freaky sun." IsEnabled="False" />
-			</MenuItem>
 			<MenuItem Header="Exit" Name="OptionExit" Click="OptionExit_Click" />
 		</Menu>
-		<Canvas Grid.Row="1">
-			<Image Name="PlayerImage" />
-		</Canvas>
+		<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+			<Canvas>
+				<Image Name="PlayerImage" />
+			</Canvas>
+		</ScrollViewer>
 		<StatusBar>
-			ready
+			Press W/S to accelerate forward/back, A/D to rotate left/right, Esc to stop immediately.
 		</StatusBar>
 	</Grid>
 </Window>

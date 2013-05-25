@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-//using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using GraphicsManipulation;
+using MBdev.Extensions;
 
 namespace ShapePlayer
 {
@@ -33,114 +24,125 @@ namespace ShapePlayer
 		private DispatcherTimer timerReport;
 		private Object timersLock;
 
-		#region polygons data
+		#region background polygons data
 
 		Color3Ch backgroundcolor = new Color3Ch(0.9, 0.9, 0.95);
 
 		private Color3Ch suncolor = new Color3Ch(0.99, 0.99, 0.1);
-		private List<Point2D> sun = new List<Point2D>
-		{
-			new Point2D(50, 0),
-			new Point2D(100, 50),
-			new Point2D(50, 100),
-			new Point2D(0, 50)
-		};
+		private Polygon sun = new Polygon(
+			new Point(50, 0), new Point(100, 50), new Point(50, 100), new Point(0, 50));
 
 		private Color3Ch waves1color = new Color3Ch(0.3, 0.3, 1);
-		private Point2D waves1offset = new Point2D();
+		private Point waves1offset = new Point();
 		private bool waves1offsetsign = true;
-		private List<Point2D> waves1 = new List<Point2D>
-		{
-			new Point2D(0, 0),
-			new Point2D(20, 50),
-			new Point2D(40, 0),
-			new Point2D(60, 50),
-			new Point2D(80, 0),
-			new Point2D(100, 50),
-			new Point2D(120, 0),
-			new Point2D(140, 50),
-			new Point2D(160, 0),
-			new Point2D(180, 50),
-			new Point2D(200, 0),
-			new Point2D(220, 50),
-			new Point2D(240, 0),
-			new Point2D(260, 50),
-			new Point2D(280, 0),
-			new Point2D(300, 50),
-			new Point2D(320, 0),
-			new Point2D(340, 50),
-			new Point2D(360, 0),
-			new Point2D(380, 50),
-			new Point2D(400, 0),
-			new Point2D(420, 50),
-			new Point2D(440, 0),
-			new Point2D(440, 170),
-			new Point2D(0, 160)
-		};
+		private Polygon waves1 = new Polygon(
+			new Point(0, 0),
+			new Point(20, 50),
+			new Point(40, 0),
+			new Point(60, 50),
+			new Point(80, 0),
+			new Point(100, 50),
+			new Point(120, 0),
+			new Point(140, 50),
+			new Point(160, 0),
+			new Point(180, 50),
+			new Point(200, 0),
+			new Point(220, 50),
+			new Point(240, 0),
+			new Point(260, 50),
+			new Point(280, 0),
+			new Point(300, 50),
+			new Point(320, 0),
+			new Point(340, 50),
+			new Point(360, 0),
+			new Point(380, 50),
+			new Point(400, 0),
+			new Point(420, 50),
+			new Point(440, 0),
+			new Point(440, 170),
+			new Point(0, 160)
+		);
 
-		private Color3Ch waves2color = new Color3Ch(0, 0, 1);
-		private Point2D waves2offset = new Point2D();
+		private Color3Ch waves2color = new Color3Ch(0.2, 0.2, 0.8);
+		private Point waves2offset = new Point();
 		private bool waves2offsetsign = false;
-		private List<Point2D> waves2 = new List<Point2D>
-		{
-			new Point2D(0, 0),
-			new Point2D(20, 30),
-			new Point2D(40, 0),
-			new Point2D(60, 35),
-			new Point2D(80, 5),
-			new Point2D(100, 45),
-			new Point2D(120, 10),
-			new Point2D(140, 50),
-			new Point2D(160, 10),
-			new Point2D(180, 45),
-			new Point2D(200, 5),
-			new Point2D(220, 35),
-			new Point2D(240, 0),
-			new Point2D(260, 30),
-			new Point2D(280, 0),
-			new Point2D(300, 35),
-			new Point2D(320, 5),
-			new Point2D(340, 45),
-			new Point2D(360, 10),
-			new Point2D(380, 50),
-			new Point2D(400, 10),
-			new Point2D(420, 45),
-			new Point2D(440, 5),
-			new Point2D(460, 35),
-			new Point2D(480, 0),
-			new Point2D(480, 160),
-			new Point2D(0, 170)
-		};
+		private Polygon waves2 = new Polygon(
+			new Point(0, 0),
+			new Point(20, 30),
+			new Point(40, 0),
+			new Point(60, 35),
+			new Point(80, 5),
+			new Point(100, 45),
+			new Point(120, 10),
+			new Point(140, 50),
+			new Point(160, 10),
+			new Point(180, 45),
+			new Point(200, 5),
+			new Point(220, 35),
+			new Point(240, 0),
+			new Point(260, 30),
+			new Point(280, 0),
+			new Point(300, 35),
+			new Point(320, 5),
+			new Point(340, 45),
+			new Point(360, 10),
+			new Point(380, 50),
+			new Point(400, 10),
+			new Point(420, 45),
+			new Point(440, 5),
+			new Point(460, 35),
+			new Point(480, 0),
+			new Point(480, 160),
+			new Point(0, 170)
+		);
+		#endregion
+
+		#region user controlled polygon data
 
 		private Color3Ch dolphincolor = new Color3Ch(0.5, 0.5, 0.5);
-		private Color3Ch dolphincolorother = new Color3Ch(0.9, 0.3, 0.3);
-		private Point2D dolphinoffset = new Point2D(0, 1);
-		private bool dolphinoffsetsign = true;
-		private List<Point2D> dolphin = new List<Point2D>
-		{
-			new Point2D(0, 60),
-			new Point2D(70, 28),
-			new Point2D(90, 23),
-			new Point2D(170, 20),
-			new Point2D(210, 0),
-			new Point2D(200, 25),
-			new Point2D(370, 60),
-			new Point2D(400, 55),
-			new Point2D(365, 90),
-			new Point2D(360, 65),
-			new Point2D(140, 67),
-			new Point2D(160, 80),
-			new Point2D(110, 65)
-		};
-		private IList<Point2D>[] dolphinother;
+		private Color3Ch dolphincolorother1 = new Color3Ch(0.6, 0.0, 0.4);
+		private Color3Ch dolphincolorother2 = new Color3Ch(0.9, 0.8, 0.0);
+		private Color3Ch dolphincolorother3 = new Color3Ch(0.0, 0.7, 0.7);
+		private Color3Ch[][] dolphinpatternother = new Color3Ch[][]
+			{
+				new Color3Ch[] { new Color3Ch(1.0, 0.0, 0.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 0.0, 0.0) },
+				new Color3Ch[] { new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(0.0, 0.0, 0.0), new Color3Ch(0.0, 0.0, 0.0), new Color3Ch(0.0, 0.0, 0.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0) },
+				new Color3Ch[] { new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(0.0, 0.0, 0.0), new Color3Ch(0.0, 0.0, 0.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(0.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0) },
+				new Color3Ch[] { new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(0.0, 0.0, 0.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(0.0, 1.0, 1.0), new Color3Ch(0.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0) },
+				new Color3Ch[] { new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(0.0, 1.0, 1.0), new Color3Ch(0.0, 1.0, 1.0), new Color3Ch(0.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0) },
+				new Color3Ch[] { new Color3Ch(1.0, 0.0, 0.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 1.0, 1.0), new Color3Ch(1.0, 0.0, 0.0) }
+			};
+		private Point origin = new Point(0, 0);
+		private double dolphinAngle = 270;
+		private double dolphinAnglePrevious = 270;
+		private double dolphinSpeed = 0;
+		private Point dolphinoffset = new Point(0, 0);
+		//private bool dolphinoffsetsign = true;
+		private Polygon dolphin = new Polygon(
+			new Point(0, 60),
+			new Point(70, 28),
+			new Point(90, 23),
+			new Point(170, 20),
+			new Point(210, 0),
+			new Point(200, 25),
+			new Point(370, 60),
+			new Point(400, 55),
+			new Point(365, 90),
+			new Point(360, 65),
+			new Point(140, 67),
+			new Point(160, 80),
+			new Point(110, 65)
+		);
+		private Polygon[] dolphinother;
 
 		#endregion
 
 		private Object bitmapArrayLock;
 		private FastBitmapArray bitmapArray;
+		private bool reinitializeDisplayedBitmap;
 
-		private IList<Point2D> rect1, rect2, trig1, trig2;
-		private IList<Point2D>[] rect3, trig3;
+		private Polygon rect1, rect2, trig1, trig2;
+		private Polygon[] rect3, trig3;
 
 		public ShapePlayerWnd()
 		{
@@ -156,22 +158,29 @@ namespace ShapePlayer
 
 			bitmapArray = new FastBitmapArray(500, 500, 0.9, 0.9, 0.9);
 
-			sun.Offset(new Point2D(200, 200));
-			waves1.Offset(new Point2D(0, 250));
-			waves2.Offset(new Point2D(40, 280));
-			dolphin.Offset(new Point2D(10, 140));
+			sun.Offset(200, 200);
+			waves1.Offset(0, 250);
+			waves2.Offset(40, 280);
+			dolphin.Offset(70, 140);
 
-			rect1 = new Point2D[] { new Point2D(20, 20), new Point2D(20, 80), new Point2D(80, 80), new Point2D(80, 20) };
-			rect2 = rect1.Copy();
-			rect2.Offset(new Point2D(30, 30));
-			rect3 = rect1.Clip(rect2);
+			try
+			{
+				rect1 = new Polygon(new Point(20, 20), new Point(20, 80), new Point(80, 80), new Point(80, 20));
+				rect2 = rect1.Copy();
+				rect2.Offset(30, 30);
+				rect3 = rect1.Clip(rect2);
 
-			trig1 = new Point2D[] { new Point2D(220, 80), new Point2D(280, 20), new Point2D(280, 80) };
-			trig2 = trig1.Copy();
-			trig2.Offset(new Point2D(15, 15));
-			trig3 = trig1.Clip(trig2);
+				trig1 = new Polygon(new Point(220, 80), new Point(280, 20), new Point(280, 80));
+				trig2 = trig1.Copy();
+				trig2.Offset(15, 15);
+				trig3 = trig1.Clip(trig2);
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine(e.ToString());
+			}
 
-			RedrawImage();
+			reinitializeDisplayedBitmap = true;
 
 			timer = new DispatcherTimer(new TimeSpan(0, 0, 0, 0, 30), DispatcherPriority.Background,
 				TimerTick, this.Dispatcher);
@@ -189,7 +198,7 @@ namespace ShapePlayer
 			int width = (int)Math.Floor(e.NewSize.Width);
 			int height = (int)Math.Floor(e.NewSize.Height);
 
-			//UpdateImageSize(width, height);
+			UpdateImageSize(width, height);
 		}
 
 		private void UpdateImageSize(int width, int height)
@@ -201,17 +210,19 @@ namespace ShapePlayer
 
 				var newBitmapArray = new FastBitmapArray(width, height);
 
-				bool smallerWidth = width < oldWidth;
-				bool smallerHeight = height < oldHeight;
+				//bool smallerWidth = width < oldWidth;
+				//bool smallerHeight = height < oldHeight;
 
-				int diffWidth = width - oldWidth;
-				int diffHeight = height - oldHeight;
+				//int diffWidth = width - oldWidth;
+				//int diffHeight = height - oldHeight;
 
-				if (!smallerWidth && !smallerHeight)
-					bitmapArray.CopyAreaBatch(bitmapArray);
+				//if (!smallerWidth && !smallerHeight)
+				//	bitmapArray.CopyAreaBatch(bitmapArray);
+
+				bitmapArray = newBitmapArray;
+
+				reinitializeDisplayedBitmap = true;
 			}
-
-			RedrawImage();
 		}
 
 		private void TimerTick(object sender, EventArgs e)
@@ -219,7 +230,7 @@ namespace ShapePlayer
 			lock (timersLock)
 				stopwatch.Start();
 
-			sun.Offset(new Point2D(random.Next() % 5 - 2, random.Next() % 5 - 2));
+			sun.Offset(random.Next() % 5 - 2, random.Next() % 5 - 2);
 
 			if (waves1offset.X > 4)
 				waves1offsetsign = false;
@@ -245,16 +256,22 @@ namespace ShapePlayer
 
 			waves2.Offset(waves2offset);
 
-			if (dolphinoffset.Y > 14)
-				dolphinoffsetsign = false;
-			else if (dolphinoffset.Y < -14)
-				dolphinoffsetsign = true;
+			//if (dolphinoffset.Y > 14)
+			//	dolphinoffsetsign = false;
+			//else if (dolphinoffset.Y < -14)
+			//	dolphinoffsetsign = true;
 
-			if (dolphinoffsetsign)
-				dolphinoffset.Y++;
-			else
-				dolphinoffset.Y--;
+			//if (dolphinoffsetsign)
+			//	dolphinoffset.Y++;
+			//else
+			//	dolphinoffset.Y--;
 
+			if (dolphinAnglePrevious != dolphinAngle)
+			{
+				Point middle = dolphin.Points[0].MoveHalfwayTo(dolphin.Points[7]);
+				dolphin.Rotate(middle, (dolphinAngle - 270) - (dolphinAnglePrevious - 270));
+				dolphinAnglePrevious = dolphinAngle;
+			}
 			dolphin.Offset(dolphinoffset);
 
 			dolphinother = dolphin.Clip(waves2);
@@ -285,46 +302,98 @@ namespace ShapePlayer
 				calc, drawing, total, time - total, time, globalN++));
 		}
 
-		private void RedrawImage()
-		{
-			lock (bitmapArrayLock)
-			{
-				PlayerImage.Source = bitmapArray.GetBitmap(Mask.Disabled);
-				PlayerImage.Width = bitmapArray.Width;
-				PlayerImage.Height = bitmapArray.Height;
-			}
-		}
-
 		private void RedrawAllShapes()
 		{
 			lock (bitmapArrayLock)
 			{
 				bitmapArray.Fill(backgroundcolor);
 
-				bitmapArray.DrawPolygon(sun, suncolor, true);
-				bitmapArray.DrawPolygon(waves1, waves1color, true);
-				bitmapArray.DrawPolygon(dolphin, dolphincolor, true);
-				bitmapArray.DrawPolygon(waves2, waves2color, true);
+				bitmapArray.FillPolygon(sun, suncolor);
+				bitmapArray.FillPolygon(waves1, waves1color);
+				bitmapArray.FillPolygon(dolphin, dolphincolor);
+				bitmapArray.FillPolygon(waves2, waves2color);
 				foreach (var dolphinotherfragment in dolphinother)
-					bitmapArray.DrawPolygon(dolphinotherfragment, dolphincolorother, true);
+					if (dolphinotherfragment.PointsCount == 3)
+						bitmapArray.FillPolygon(dolphinotherfragment, dolphincolorother1);
+					else if (dolphinotherfragment.PointsCount == 4)
+						bitmapArray.FillPolygon(dolphinotherfragment, dolphincolorother2);
+					else if (dolphinotherfragment.PointsCount == 5)
+						bitmapArray.FillPolygon(dolphinotherfragment, dolphincolorother3);
+					else
+						bitmapArray.FillPolygon(dolphinotherfragment, dolphinpatternother);
 
-				bitmapArray.DrawPolygon(rect1, Colors4Ch.Red, true);
-				bitmapArray.DrawPolygon(rect2, Colors4Ch.Blue, true);
+
+				bitmapArray.FillPolygon(rect1, Colors4Ch.Red);
+				bitmapArray.FillPolygon(rect2, Colors4Ch.Blue);
 				foreach (var rect in rect3)
-					bitmapArray.DrawPolygon(rect, Colors4Ch.White, true);
+					bitmapArray.FillPolygon(rect, Colors4Ch.White);
 
-				bitmapArray.DrawPolygon(trig1, Colors4Ch.Red, true);
-				bitmapArray.DrawPolygon(trig2, Colors4Ch.Blue, true);
+				bitmapArray.FillPolygon(trig1, Colors4Ch.Red);
+				bitmapArray.FillPolygon(trig2, Colors4Ch.Blue);
 				foreach (var trig in trig3)
-					bitmapArray.DrawPolygon(trig, Colors4Ch.White, true);
+					bitmapArray.FillPolygon(trig, Colors4Ch.White);
 
-				bitmapArray.RefreshBitmap(Mask.Rectangle);
+				bitmapArray.RefreshBitmap(Mask.Disabled);
+
+				if (reinitializeDisplayedBitmap)
+				{
+					PlayerImage.Source = bitmapArray.GetBitmap(Mask.Disabled);
+					PlayerImage.Width = bitmapArray.Width;
+					PlayerImage.Height = bitmapArray.Height;
+
+					reinitializeDisplayedBitmap = false;
+				}
 			}
 		}
 
 		private void OptionExit_Click(object sender, RoutedEventArgs e)
 		{
 			Close();
+		}
+
+		private void Window_KeyDown(object sender, KeyEventArgs e)
+		{
+			switch (e.Key)
+			{
+				case Key.W:
+					++dolphinSpeed;
+					break;
+				case Key.S:
+					--dolphinSpeed;
+					break;
+				case Key.A:
+					dolphinAngle -= 2;
+					break;
+				case Key.D:
+					dolphinAngle += 2;
+					break;
+				case Key.Escape:
+					dolphinSpeed = 0;
+					break;
+				default:
+					return;
+			}
+			dolphinoffset = origin.MoveTo(dolphinAngle, dolphinSpeed);
+			//MessageBox.Show(e.Key.ToString());
+		}
+
+		private void Window_KeyUp(object sender, KeyEventArgs e)
+		{
+			//switch (e.Key)
+			//{
+			//	case Key.W:
+			//	case Key.S:
+			//	case Key.A:
+			//		//dolphinoffset = origin.MoveTo(++dolphinAngle, dolphinSpeed);
+			//		break;
+			//	case Key.D:
+			//		//dolphinoffset = origin.MoveTo(--dolphinAngle, dolphinSpeed);
+			//		break;
+			//	case Key.Escape:
+			//	default:
+			//		break;
+			//}
+			//MessageBox.Show(e.Key.ToString());
 		}
 
 	}

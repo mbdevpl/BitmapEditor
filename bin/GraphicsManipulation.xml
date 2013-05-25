@@ -489,5 +489,41 @@
             Possible kinds of mask applied when refreshing the underlying image for a bitmap array.
             </summary>
         </member>
+        <member name="T:GraphicsManipulation.Polygon">
+            <summary>
+            Double precision 2D polygon stored as a list of consequtive vertices.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Polygon.intersections">
+            <summary>
+            n-th element contains:
+             1) instersection location,
+             2) distance to n-th vertex in THIS polygon,
+             3) index of vertex in OTHER polygon that has this intersection
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Polygon.pointsAndIntersections">
+            <summary>
+            Information about all points from polygon:
+            location, index in polygon, index in intersections, tuple index in intersections.
+            </summary>
+        </member>
+        <member name="M:GraphicsManipulation.Polygon.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="F:GraphicsManipulation.Polygon.allPoints">
+            <summary>
+            unordered list of all points that will be then sorted
+            and possibly divided into fragments that will then be returned;
+            this list includes all points that make up the clipped shape
+            </summary>
+        </member>
+        <member name="P:GraphicsManipulation.Polygon.PointsCount">
+            <summary>
+            Number of vertices of this polygon.
+            </summary>
+        </member>
     </members>
 </doc>

@@ -1,15 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FDFEEA09-7CAE-45C2-B491-9A537BC20332}</ProjectGuid>
+    <ProjectGuid>{21A6D773-4537-4B78-8D54-53125BF1BE9A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GraphicsManipulation</RootNamespace>
-    <AssemblyName>GraphicsManipulation</AssemblyName>
+    <RootNamespace>MBdev.Extensions</RootNamespace>
+    <AssemblyName>MBdev.Extensions</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -29,13 +28,14 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\GraphicsManipulation.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\MBdev.Extensions.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,38 +44,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Color.cs" />
-    <Compile Include="Dithering\ErrorDiffusionConverter.cs" />
-    <Compile Include="Dithering\ErrorDiffusionKernelName.cs" />
-    <Compile Include="Dithering\OrderedDitheringConverter.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="FastBitmapArray.cs" />
-    <Compile Include="Filters\BrightenFilter.cs" />
-    <Compile Include="Filters\BrushShapes.cs" />
-    <Compile Include="Filters\CustomFilter.cs" />
-    <Compile Include="Filters\DarkenFilter.cs" />
-    <Compile Include="Filters\FilterBrush.cs" />
-    <Compile Include="Filters\FilterTypes.cs" />
-    <Compile Include="Filters\IdentityFilter.cs" />
-    <Compile Include="Filters\GrayscaleFilter.cs" />
-    <Compile Include="Filters\InverseFilter.cs" />
-    <Compile Include="Filters\OnlyBlueFilter.cs" />
-    <Compile Include="Filters\OnlyGreenFilter.cs" />
-    <Compile Include="Filters\OnlyRedFilter.cs" />
-    <Compile Include="Filters\RandomFilter.cs" />
-    <Compile Include="Filters\SepiaFilter.cs" />
-    <Compile Include="Filters\SingleFilterBrush.cs" />
-    <Compile Include="Line.cs" />
-    <Compile Include="Mask.cs" />
-    <Compile Include="Point2D.cs" />
-    <Compile Include="Polygon.cs" />
+    <Compile Include="ArrayExtensions.cs" />
+    <Compile Include="IEnumerableExtensions.cs" />
+    <Compile Include="IListExtensions.cs" />
+    <Compile Include="PointExtensions.cs" />
+    <Compile Include="PresentationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MBdevExtensions\MBdevExtensions.csproj">
-      <Project>{21a6d773-4537-4b78-8d54-53125bf1be9a}</Project>
-      <Name>MBdevExtensions</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

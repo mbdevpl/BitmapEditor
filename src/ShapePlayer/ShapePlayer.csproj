@@ -27,7 +27,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -62,7 +62,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Extensions.cs" />
     <Compile Include="ShapePlayerWnd.xaml.cs">
       <DependentUpon>ShapePlayerWnd.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -98,6 +97,13 @@
       <Project>{fdfeea09-7cae-45c2-b491-9a537bc20332}</Project>
       <Name>GraphicsManipulation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MBdevExtensions\MBdevExtensions.csproj">
+      <Project>{21a6d773-4537-4b78-8d54-53125bf1be9a}</Project>
+      <Name>MBdevExtensions</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

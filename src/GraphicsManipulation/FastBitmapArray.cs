@@ -758,14 +758,22 @@ namespace GraphicsManipulation
 
 		public void Fill(Color3Ch color)
 		{
-			DrawRectangle(Point2D.Zero, new Point2D(width - 1, height - 1), color);
+			//DrawRectangle(Point2D.Zero, new Point2D(width - 1, height - 1), color);
+			Change(0, 0);
+			Change(width - 1, height - 1);
+			for (int x = 0; x < width; x++)
+				for (int y = 0; y < height; y++)
+				{
+					R[x][y] = color.Red;
+					G[x][y] = color.Green;
+					B[x][y] = color.Blue;
+				}
 		}
 
 		public void DrawRectangle(Point2D leftTop, Point2D rightBottom, Color3Ch color)
 		{
 			Change(leftTop.X, leftTop.Y);
 			Change(rightBottom.X, rightBottom.Y);
-			//SetBatchArea(leftTop, rightBottom);
 			for (int x = leftTop.X; x <= rightBottom.X; x++)
 				for (int y = leftTop.Y; y <= rightBottom.Y; y++)
 				{
@@ -777,42 +785,276 @@ namespace GraphicsManipulation
 
 		public void Fill(Point2D from, Color3Ch color)
 		{
+			throw new NotImplementedException("use polygon with scan-line fill");
+		}
+
+		public void FillPolygon(Polygon polygon, Color3Ch[][] pattern)
+		{
+			if (polygon == null || polygon.PointsCount == 0)
+				return;
+
+			var points = polygon.Points.ToPoints2D();
+			var max = polygon.PointsCount - 1;
+			int minx;
+			int maxx;
+
+			IList<Tuple<Point2D, Point2D>> edges = PointsToEdges(points, out minx, out maxx);
+
+			Change(Math.Max(minx, 0), Math.Max(edges[0].Item1.Y, 0));
+			Change(Math.Min(maxx, width - 1), Math.Min(edges[max].Item2.Y, height - 1));
+
+			bool[] active;
+			double[] ratios;
+			double[] xs;
+
+			InitializeClipSupport(edges, out active, out ratios, out xs);
+
+			int minActive = edges.Count;
+			int maxActive = 0;
+
+			int patternWidth = pattern[0].Length;
+			int patternHeight = pattern.Length;
+			int patternX = 0;
+			int patternY = edges[0].Item1.Y % patternHeight;
+
+			for (int y = Math.Max(edges[0].Item1.Y, 0); y < height; ++y)
+			{
+				bool noneActive = true;
+				for (int i = 0; i < edges.Count; ++i)
+				{
+					// modify coordinates of active x coordinates
+					if (active[i])
+						xs[i] += ratios[i];
+
+					// activate/deactivate edges
+					active[i] = y >= edges[i].Item1.Y && y < edges[i].Item2.Y;
+					if (!active[i])
+						continue;
+
+					// change active indices range
+					noneActive = false;
+					if (i < minActive)
+						minActive = i;
+					if (i > maxActive)
+						maxActive = i;
+				}
+				if (noneActive)
+					break;
+
+				// compose a list of x coordinates of current borders
+				List<int> xx = new List<int>();
+				for (int i = minActive; i <= maxActive; ++i)
+					if (active[i])
+					{
+						int j;
+						for (j = 0; j < xx.Count; ++j)
+							if (xx[j] >= xs[i])
+								break;
+						xx.Insert(j, Math.Max((int)Math.Round(xs[i]), 0));
+					}
+
+				#region draw row
+				if (xx[0] < width)
+				{
+					bool isDrawing = true;
+					int xchecked = 1;
+
+					patternX = xx[0] % pattern[0].Length;
+					if ((xx.Count == 1 && xx[0] > 0) || (xx.Count > 1 && xx[1] > 0))
+					{
+						R[xx[0]][y] = pattern[patternX][patternY].Red;
+						G[xx[0]][y] = pattern[patternX][patternY].Green;
+						B[xx[0]][y] = pattern[patternX][patternY].Blue;
+					}
+
+					for (int x = xx[0] + 1; x < width; ++x)
+					{
+						++patternX;
+						if (patternX == patternWidth)
+							patternX = 0;
+
+						if (x >= xx[xchecked])
+						{
+							++xchecked;
+							isDrawing = !isDrawing;
+						}
+
+						if (isDrawing)
+						{
+							R[x][y] = pattern[patternX][patternY].Red;
+							G[x][y] = pattern[patternX][patternY].Green;
+							B[x][y] = pattern[patternX][patternY].Blue;
+						}
+						else
+						{
+							if (xchecked == xx.Count)
+								break;
+							x = xx[xchecked] - 1;
+							patternX = x % pattern[0].Length;
+						}
+					}
+				}
+				#endregion
+
+				++patternY;
+				if (patternY == patternHeight)
+					patternY = 0;
+			}
+		}
+
+		public void FillPolygon(Polygon polygon, Color3Ch color)
+		{
+			if (polygon == null || polygon.PointsCount == 0)
+				return;
+
+			var points = polygon.Points.ToPoints2D();
+			var max = polygon.PointsCount - 1;
+			int minx;
+			int maxx;
+
+			IList<Tuple<Point2D, Point2D>> edges = PointsToEdges(points, out minx, out maxx);
+
+			Change(Math.Max(minx, 0), Math.Max(edges[0].Item1.Y, 0));
+			Change(Math.Min(maxx, width - 1), Math.Min(edges[max].Item2.Y, height - 1));
+
+			bool[] active;
+			double[] ratios;
+			double[] xs;
+
+			InitializeClipSupport(edges, out active, out ratios, out xs);
+
+			int minActive = edges.Count;
+			int maxActive = 0;
+
+			for (int y = Math.Max(edges[0].Item1.Y, 0); y < height; ++y)
+			{
+				bool noneActive = true;
+				for (int i = 0; i < edges.Count; ++i)
+				{
+					// modify coordinates of active x coordinates
+					if (active[i])
+						xs[i] += ratios[i];
+
+					// activate/deactivate edges
+					active[i] = y >= edges[i].Item1.Y && y < edges[i].Item2.Y;
+					if (!active[i])
+						continue;
+
+					// change active indices range
+					noneActive = false;
+					if (i < minActive)
+						minActive = i;
+					if (i > maxActive)
+						maxActive = i;
+				}
+				if (noneActive)
+					break;
+
+				// compose a list of x coordinates of current borders
+				List<int> xx = new List<int>();
+				for (int i = minActive; i <= maxActive; ++i)
+					if (active[i])
+					{
+						int j;
+						for (j = 0; j < xx.Count; ++j)
+							if (xx[j] >= xs[i])
+								break;
+						xx.Insert(j, Math.Max((int)Math.Round(xs[i]), 0));
+					}
+
+				#region draw row
+				if (xx[0] < width)
+				{
+					bool isDrawing = true;
+					int xchecked = 1;
+
+					if ((xx.Count == 1 && xx[0] > 0) || (xx.Count > 1 && xx[1] > 0))
+					{
+						R[xx[0]][y] = color.Red;
+						G[xx[0]][y] = color.Green;
+						B[xx[0]][y] = color.Blue;
+					}
+
+					for (int x = xx[0] + 1; x < width; ++x)
+					{
+						if (x >= xx[xchecked])
+						{
+							++xchecked;
+							isDrawing = !isDrawing;
+						}
+
+						if (isDrawing)
+						{
+							R[x][y] = color.Red;
+							G[x][y] = color.Green;
+							B[x][y] = color.Blue;
+						}
+						else
+						{
+							if (xchecked == xx.Count)
+								break;
+							x = xx[xchecked] - 1;
+						}
+					}
+				}
+				#endregion
+			}
+		}
+
+		private void InitializeClipSupport(IList<Tuple<Point2D, Point2D>> edges,
+			out bool[] active, out double[] ratios, out double[] xs)
+		{
+			active = new bool[edges.Count];
+			ratios = new double[edges.Count];
+			xs = new double[edges.Count];
+
+			//Parallel.For(0, edges.Count, (int i) =>
+			for (int i = 0; i < edges.Count; ++i)
+			{
+				active[i] = false;
+				ratios[i] = ((double)(edges[i].Item2.X - edges[i].Item1.X)) / (edges[i].Item2.Y - edges[i].Item1.Y);
+				xs[i] = edges[i].Item1.X;
+				if (edges[i].Item1.Y < 0)
+					xs[i] += ratios[i] * edges[i].Item1.Y;
+			}
+			//);
 
 		}
 
-		public void DrawPolygon(IList<Point2D> points, Color3Ch color, bool fill, int lineThickness = 0,
-			IList<Point2D> clippingPolygon = null)
+		public void DrawPolygon(Polygon polygon, Color3Ch color, int lineThickness)
 		{
-			if (points == null || points.Count < 1)
+			if (polygon == null || polygon.PointsCount == 0)
 				return;
 
-			var max = points.Count - 1;
+			var points = polygon.Points.ToPoints2D();
+			var max = polygon.PointsCount - 1;
 
-			if (!fill || lineThickness > 0)
+			for (int i = 0; i < max; ++i)
 			{
-				// simple version
-				for (int i = 0; i < max; ++i)
-				{
-					var pt1 = points[i];
-					var pt2 = points[i + 1];
+				var pt1 = points[i];
+				var pt2 = points[i + 1];
 
-					DrawLine(pt1, pt2, color, lineThickness);
-				}
-				DrawLine(points[max], points[0], color, lineThickness);
+				DrawLine(pt1, pt2, color, lineThickness);
 			}
+			if (max > 0)
+				DrawLine(points[max], points[0], color, lineThickness);
+			else
+				DrawLine(points[0], new Point2D(points[0].X + 1, points[0].Y), color, lineThickness);
+		}
 
-			if (!fill)
-				return;
-
-			IList<Tuple<Point2D, Point2D>> edges = new List<Tuple<Point2D, Point2D>>();
+		private IList<Tuple<Point2D, Point2D>> PointsToEdges(IList<Point2D> points, out int minx, out int maxx)
+		{
+			var count = points.Count;
+			var max = count - 1;
+			IList<Tuple<Point2D, Point2D>> edges = new List<Tuple<Point2D, Point2D>>(count);
 
 			if (points[max].Y > points[0].Y)
 				edges.Add(new Tuple<Point2D, Point2D>(points[0], points[max]));
 			else
 				edges.Add(new Tuple<Point2D, Point2D>(points[max], points[0]));
 
-			int minx = width - 1;
-			int maxx = 0;
+			minx = width - 1;
+			maxx = 0;
 
 			for (int i = 0; i < max; ++i)
 			{
@@ -833,98 +1075,45 @@ namespace GraphicsManipulation
 				edges.Insert(k, new Tuple<Point2D, Point2D>(pt1, pt2));
 			}
 
-			Change(Math.Max(minx, 0), edges[0].Item1.Y);
-			Change(Math.Min(maxx, width - 1), edges[max].Item2.Y);
-
-			bool[] active = new bool[edges.Count];
-			double[] ratios = new double[edges.Count];
-			double[] xs = new double[edges.Count];
-
-			//Parallel.For(0, edges.Count, (int i) =>
-			for (int i = 0; i < edges.Count; ++i)
-			{
-				active[i] = false;
-				ratios[i] = ((double)(edges[i].Item2.X - edges[i].Item1.X)) / (edges[i].Item2.Y - edges[i].Item1.Y);
-				xs[i] = edges[i].Item1.X;
-			}
-			//);
-
-			int minActive = edges.Count;
-			int maxActive = 0;
-
-			for (int y = edges[0].Item1.Y; y < height; ++y)
-			{
-				// modify coordinates of active x coordinates
-				for (int i = 0; i < edges.Count; ++i)
-					if (active[i])
-						xs[i] += ratios[i];
-
-				// activate/deactivate edges
-				bool noneActive = true;
-				for (int i = 0; i < edges.Count; ++i)
-				{
-					active[i] = y >= edges[i].Item1.Y && y < edges[i].Item2.Y;
-					if (!active[i])
-						continue;
-
-					noneActive = false;
-					if (i < minActive)
-						minActive = i;
-					if (i > maxActive)
-						maxActive = i;
-				}
-				if (noneActive)
-					break;
-
-				// compose a list of x coordinates of current borders
-				List<int> xx = new List<int>();
-				for (int i = minActive; i <= maxActive; ++i)
-					if (active[i])
-					{
-						int j;
-						for (j = 0; j < xx.Count; ++j)
-							if (xx[j] >= xs[i])
-								break;
-						xx.Insert(j, (int)Math.Round(xs[i]));
-					}
-
-				// draw
-				bool isDrawing = true;
-				int xchecked = 1;
-				//if (xx.Count > 2)
-				//	xchecked = xchecked + 1 - 1;
-
-				//if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(xx[0], y)))
-				//SetPixelBatch(xx[0], y, color);
-				R[xx[0]][y] = color.Red;
-				G[xx[0]][y] = color.Green;
-				B[xx[0]][y] = color.Blue;
-
-				for (int x = xx[0] + 1; x < width; ++x)
-				{
-					if (x >= xx[xchecked])
-					{
-						++xchecked;
-						isDrawing = !isDrawing;
-					}
-
-					if (isDrawing)
-					{
-						//if (clippingPolygon == null || clippingPolygon.IsInside(new Point2D(x, y)))
-						//SetPixelBatch(x, y, color);
-						R[x][y] = color.Red;
-						G[x][y] = color.Green;
-						B[x][y] = color.Blue;
-					}
-					else
-					{
-						if (xchecked == xx.Count)
-							break;
-						x = xx[xchecked] - 1;
-					}
-				}
-			}
+			return edges;
 		}
+
+		//public void DrawPolygon(Polygon polygon, Color3Ch color, bool fill, int lineThickness = 0)
+		//{
+		//	if (polygon == null || polygon.PointsCount == 0)
+		//		return;
+
+		//	var points = polygon.Points.ToPoints2D();
+		//	var max = polygon.PointsCount - 1;
+
+		//	if (points.Count < 3)
+		//	{
+		//		color = new Color3Ch(1, 1, 0);
+		//		lineThickness += 2;
+		//		fill = false;
+		//	}
+
+		//	if (!fill || lineThickness > 0)
+		//	{
+		//		// simple version
+		//		for (int i = 0; i < max; ++i)
+		//		{
+		//			var pt1 = points[i];
+		//			var pt2 = points[i + 1];
+
+		//			DrawLine(pt1, pt2, color, lineThickness);
+		//		}
+		//		if (max > 0)
+		//			DrawLine(points[max], points[0], color, lineThickness);
+		//		else
+		//			DrawLine(points[0], new Point2D(points[0].X + 1, points[0].Y), color, lineThickness);
+		//	}
+
+		//	if (!fill)
+		//		return;
+
+
+		//}
 
 		/// <summary>
 		/// Draws the given line, using Bresenham's line algorithm.
@@ -1030,7 +1219,7 @@ namespace GraphicsManipulation
 				if (mask == Mask.Rectangle)
 				{
 					int xSize = xMaxChanged - xMinChanged + 1, ySize = yMaxChanged - yMinChanged + 1;
-					int delta = xSize * bytesPerPixel;
+					int delta = xSize * bytesPerPixel - 3;
 
 					Int32Rect maskingRect = new Int32Rect(xMinChanged, yMinChanged, xSize, ySize);
 
@@ -1043,10 +1232,10 @@ namespace GraphicsManipulation
 						for (int y = 0; y < ySize; y++)
 						{
 							int yy = yMinChanged + y;
-							pixelsRect[index + 2] = (byte)(MaxByteValue * R[xx][yy]);
-							pixelsRect[index + 1] = (byte)(MaxByteValue * G[xx][yy]);
-							pixelsRect[index + 0] = (byte)(MaxByteValue * B[xx][yy]);
-							pixelsRect[index + 3] = (byte)(MaxByteValue * A[xx][yy]);
+							pixelsRect[index++] = (byte)(MaxByteValue * B[xx][yy]);
+							pixelsRect[index++] = (byte)(MaxByteValue * G[xx][yy]);
+							pixelsRect[index++] = (byte)(MaxByteValue * R[xx][yy]);
+							pixelsRect[index] = (byte)(MaxByteValue * A[xx][yy]);
 							index += delta;
 
 							changed[xx][yy] = false;
@@ -1054,7 +1243,7 @@ namespace GraphicsManipulation
 					}
 
 					bitmap.Lock();
-					bitmap.WritePixels(maskingRect, pixelsRect, delta, 0);
+					bitmap.WritePixels(maskingRect, pixelsRect, delta + 3, 0);
 					bitmap.Unlock();
 				}
 				else if (mask == Mask.PerPixel)

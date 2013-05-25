@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MBdev.Extensions</name>
+    </assembly>
+    <members>
+        <member name="T:MBdev.Extensions.ArrayExtensions">
+            <summary>
+            Extensions for arrays.
+            </summary>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.IndexOfMax``1(``0[])">
+            <summary>
+            Finds index of maximum value. Returns -1 if argument is empty. Throws if argument is null.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="array"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.IndexOfMin``1(``0[])">
+            <summary>
+            Finds index of minimum value. Returns -1 if argument is empty. Throws if argument is null.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="array"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.IndexOfTrue(System.Boolean[])">
+            <summary>
+            Returns index of the first occurance of 'true' in this array,
+            or -1 if array has only 'false' values.
+            </summary>
+            <param name="array"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.IndexOfFalse(System.Boolean[])">
+            <summary>
+            Returns index of the first occurance of 'false' in this array,
+            or -1 if array has only 'true' values.
+            </summary>
+            <param name="array"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.MatrixAdd(System.Int32[][],System.Int32)">
+            <summary>
+            Adds corresponding elements of matrices.
+            </summary>
+            <param name="input"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.MatrixMultiply(System.Int32[][],System.Int32)">
+            <summary>
+            Multiplies each entry of a matrix by specific value.
+            </summary>
+            <param name="input"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.ArrayExtensions.MatrixMultiply(System.Int32[][],System.Int32[][])">
+            <summary>
+            Performs a matrix multiplication.
+            </summary>
+            <param name="m1"></param>
+            <param name="m2"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MBdev.Extensions.IEnumerableExtensions">
+            <summary>
+            Extensions for System.Collections.Generic.IEnumerable
+            </summary>
+        </member>
+        <member name="M:MBdev.Extensions.IEnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Returns index of first encountered instance that satisfies a given condition,
+            -1 if no such object was found.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="list">a collection</param>
+            <param name="predicate">function to be executed for each object until matching instance is found
+            or end of collection is reached</param>
+            <returns>index of object, -1 if none was found</returns>
+        </member>
+        <member name="M:MBdev.Extensions.IEnumerableExtensions.FirstOrNull``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Tries to find the first matching element, returns null in case of failure.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="list">a collection</param>
+            <param name="predicate"></param>
+            <returns>first object that satisfies the given condition,
+            or null if list is empty or no matching object was found</returns>
+        </member>
+        <member name="T:MBdev.Extensions.IListExtensions">
+            <summary>
+            Extensions for System.Collections.Generic.IList
+            </summary>
+        </member>
+        <member name="M:MBdev.Extensions.IListExtensions.IndexOfMax``1(System.Collections.Generic.IList{``0})">
+            <summary>
+            Finds index of maximum value. Returns -1 if argument is empty. Throws if argument is null.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="list"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.IListExtensions.ToSet``1(System.Collections.Generic.IList{``0})">
+            <summary>
+            Removes elements that are duplicates according to regular Equals() method
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="list"></param>
+            <returns>a new list, that has no duplicates</returns>
+        </member>
+        <member name="T:MBdev.Extensions.PointExtensions">
+            <summary>
+            Extensions for System.Windows.Point
+            </summary>
+        </member>
+        <member name="F:MBdev.Extensions.PointExtensions.RadiansToDegrees">
+            <summary>
+            Ratio between one radian and one degree.
+            </summary>
+        </member>
+        <member name="F:MBdev.Extensions.PointExtensions.DegreesToRadians">
+            <summary>
+            Ratio between one degree and one radian.
+            </summary>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.MoveTo(System.Windows.Point,System.Double,System.Double)">
+            <summary>
+            Returns a point that is offset a given distance in a given direction from
+            the original point.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="angle">an angle in degrees</param>
+            <param name="distance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.MoveTo(System.Windows.Point,System.Windows.Point,System.Double)">
+            <summary>
+            Returns a point that is offset towards a given target. If distance
+            to the target is less than given distance, the returned point
+            goes beyond the target until this given distance is reached.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="target"></param>
+            <param name="distance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.Angle(System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Computes angle from this point to some other point. If the point are at the same location, <code>Double.NaN</code> is returned.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="point"></param>
+            <returns>angle in degrees</returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.Distance(System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Computes the Euclidean distance between points.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.DotProduct(System.Windows.Point,System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Computes dot product of two vectors, AB * BC, where: A = this Point, B = point1, C = point2.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="point1"></param>
+            <param name="point2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.CrossProduct(System.Windows.Point,System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Computes cross product of two vectors, AB x AC, where: A = this Point, B = point1, C = point2.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="point1"></param>
+            <param name="point2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.DistanceToLine(System.Windows.Point,System.Windows.Point,System.Windows.Point,System.Boolean)">
+            <summary>
+            Computes Euclidean distance from this point to a given line.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="lineStart"></param>
+            <param name="lineEnd"></param>
+            <param name="segment"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.Intersects(System.Windows.Point,System.Windows.Point,System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Checks if given lines intersects. Intersection occurs if lines have at least one common point,
+            and the endpoints are included in the checking process.
+            </summary>
+            <param name="p11">start point of first line</param>
+            <param name="p12">end point of first line</param>
+            <param name="p21">start point of second line</param>
+            <param name="p22">end point of second line</param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.FindIntersection(System.Windows.Point,System.Windows.Point,System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Checks if an intersection exists between the given lines, and finds coordinates if it does.
+            Throws if there is no intersection.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="endPoint"></param>
+            <param name="otherLineStartPoint"></param>
+            <param name="otherLineEndPoint"></param>
+            <exception cref="T:System.InvalidOperationException">if there is no intersection
+            and the coordinates do not exist</exception>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.FindIntersectionAssumingItExists(System.Windows.Point,System.Windows.Point,System.Windows.Point,System.Windows.Point)">
+            <summary>
+            Assumes that the intersection exists and finds its coordinates.
+            Unspecified behaviour in case there is no intersection.
+            </summary>
+            <param name="thisPoint"></param>
+            <param name="endPoint"></param>
+            <param name="otherLineStartPoint"></param>
+            <param name="otherLineEndPoint"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PointExtensions.IsInside(System.Windows.Point,System.Collections.Generic.IList{System.Windows.Point})">
+            <summary>
+            Checks if a given point is inside of a polygon defined by list of points.
+            Edge of a polygon is also treated as inside.
+            </summary>
+            <param name="point"></param>
+            <param name="polygon"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MBdev.Extensions.PresentationExtensions">
+            <summary>
+            Extensions for Windows Presentation Foundation controls.
+            </summary>
+        </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.ChangeProperty``1(System.ComponentModel.INotifyPropertyChanged,System.ComponentModel.PropertyChangedEventHandler,``0@,``0@,System.String)">
+            <summary>
+            If the new value differs from the current private field value, this method will change
+            the given private field value and will raise the PropertyChanged event.
+            
+            Checks for equality between object using Equals()
+            </summary>
+            <typeparam name="T">a struct type</typeparam>
+            <param name="sender">an object that implements INotifyPropertyChanged</param>
+            <param name="handler">PropertyChanged event handler</param>
+            <param name="privateField">a struct</param>
+            <param name="newValue">a struct</param>
+            <param name="propertyName">name of the public property</param>
+        </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.ChangeProperty``1(System.ComponentModel.INotifyPropertyChanged,System.ComponentModel.PropertyChangedEventHandler,``0@,``0,System.String)">
+            <summary>
+            If the new value is a different object than (and it is not equal to) the current private field value,
+            this method will change the given private field value and will raise the PropertyChanged event.
+            
+            Checks for equality between objects using == and then Equals()
+            </summary>
+            <typeparam name="T">a class</typeparam>
+            <param name="sender">an object that implements INotifyPropertyChanged</param>
+            <param name="handler">PropertyChanged event handler</param>
+            <param name="privateField">instance of a class</param>
+            <param name="newValue">instance of a class</param>
+            <param name="propertyName">name of the public property</param>
+        </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.InvokePropertyChanged(System.ComponentModel.INotifyPropertyChanged,System.ComponentModel.PropertyChangedEventHandler,System.String)">
+            <summary>
+            Raises the PropertyChanged event handler on an object that implements INotifyPropertyChanged.
+            </summary>
+            <param name="sender">an object that implements INotifyPropertyChanged</param>
+            <param name="handler">PropertyChanged event handler</param>
+            <param name="propertyName">name of the public property</param>
+        </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.Add(System.Windows.Controls.Canvas,System.Windows.UIElement,System.Double,System.Double,System.Int32)">
+            <summary>
+            Adds a control to the canvas.
+            </summary>
+            <param name="canvas"></param>
+            <param name="element"></param>
+            <param name="left"></param>
+            <param name="top"></param>
+            <param name="zIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.Clear(System.Windows.Controls.Canvas)">
+            <summary>
+            Removes all controls from the canvas.
+            </summary>
+            <param name="canvas"></param>
+        </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.FindElementLocation(System.Windows.Controls.DataGrid,System.Windows.DependencyObject,System.Int32@,System.Int32@)">
+            <summary>
+            Finds an element in the data grid.
+            </summary>
+            <param name="grid"></param>
+            <param name="element"></param>
+            <param name="columnIndex"></param>
+            <param name="rowIndex"></param>
+        </member>
+    </members>
+</doc>
