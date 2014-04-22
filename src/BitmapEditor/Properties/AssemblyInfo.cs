@@ -10,9 +10,9 @@ using System.Windows;
 [assembly: AssemblyTitle("BitmapEditor")]
 [assembly: AssemblyDescription("A simple bitmap editor created as a solution to various tasks from computer graphics course @ MiNI, WUT.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MBdev")]
 [assembly: AssemblyProduct("BitmapEditor")]
-[assembly: AssemblyCopyright("Copyright © Mateusz Bysiek 2012-2013")]
+[assembly: AssemblyCopyright("Copyright © 2012-2013 Mateusz Bysiek  http://mbdev.pl/")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -69,6 +69,19 @@ namespace MBdev.Extensions
 		}
 
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="window"></param>
+		/// <returns></returns>
+		public static string GetCompanyName(this Window window)
+		{
+			var assembly = window.GetType().Assembly;
+			var customAttributes = assembly.GetCustomAttributes(typeof(AssemblyCompanyAttribute), true);
+			var companyAttribute = customAttributes[0] as AssemblyCompanyAttribute;
+			return companyAttribute.Company;
+		}
+
+		/// <summary>
 		/// Adds a control to the canvas.
 		/// </summary>
 		/// <param name="canvas"></param>

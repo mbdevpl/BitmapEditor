@@ -17,3 +17,4 @@ Thumbs.db
 # Temporary enries
 *.zip
 /src_old
+/doc/html

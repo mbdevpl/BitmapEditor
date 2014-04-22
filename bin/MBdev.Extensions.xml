@@ -277,6 +277,13 @@
             <param name="handler">PropertyChanged event handler</param>
             <param name="propertyName">name of the public property</param>
         </member>
+        <member name="M:MBdev.Extensions.PresentationExtensions.GetCompanyName(System.Windows.Window)">
+            <summary>
+            
+            </summary>
+            <param name="window"></param>
+            <returns></returns>
+        </member>
         <member name="M:MBdev.Extensions.PresentationExtensions.Add(System.Windows.Controls.Canvas,System.Windows.UIElement,System.Double,System.Double,System.Int32)">
             <summary>
             Adds a control to the canvas.
