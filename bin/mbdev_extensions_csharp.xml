@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>MBdev.Extensions</name>
+        <name>mbdev_extensions_csharp</name>
     </assembly>
     <members>
         <member name="T:MBdev.Extensions.ArrayExtensions">

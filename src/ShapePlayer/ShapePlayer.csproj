@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="mbdev_extensions_csharp">
+      <HintPath>..\..\lib\mbdev_extensions_csharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -96,10 +99,6 @@
     <ProjectReference Include="..\GraphicsManipulation\GraphicsManipulation.csproj">
       <Project>{fdfeea09-7cae-45c2-b491-9a537bc20332}</Project>
       <Name>GraphicsManipulation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MBdevExtensions\MBdevExtensions.csproj">
-      <Project>{21a6d773-4537-4b78-8d54-53125bf1be9a}</Project>
-      <Name>MBdevExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

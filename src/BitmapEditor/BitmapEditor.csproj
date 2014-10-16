@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Kent.Boogaart.HelperTrinity.dll</HintPath>
     </Reference>
+    <Reference Include="mbdev_extensions_csharp">
+      <HintPath>..\..\lib\mbdev_extensions_csharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />

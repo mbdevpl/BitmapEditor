@@ -32,6 +32,9 @@
     <DocumentationFile>bin\Release\GraphicsManipulation.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="mbdev_extensions_csharp">
+      <HintPath>..\..\lib\mbdev_extensions_csharp.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -70,12 +73,6 @@
     <Compile Include="Point2D.cs" />
     <Compile Include="Polygon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MBdevExtensions\MBdevExtensions.csproj">
-      <Project>{21a6d773-4537-4b78-8d54-53125bf1be9a}</Project>
-      <Name>MBdevExtensions</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

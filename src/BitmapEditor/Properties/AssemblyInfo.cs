@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MBdev")]
 [assembly: AssemblyProduct("BitmapEditor")]
-[assembly: AssemblyCopyright("Copyright © 2012-2013 Mateusz Bysiek  http://mbdev.pl/")]
+[assembly: AssemblyCopyright("Copyright © 2012-2014 Mateusz Bysiek  http://mbdev.pl/")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
